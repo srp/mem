@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import mem
+
+def find_root():
+    d = os.path.abspath(os.curdir)
+    while (not os.path.exists(os.path.join(d, "MemfileRoot.py"))):
+        if d == "/":
+            sys.stderr.write("No root 'Memfile.py' found!")
+            sys.exit(1)
+        d = os.path.dirname(d)
+    return d
+
+if __name__ == '__main__':
+    root = find_root()
+    sys.path.insert(0, root)
+    m = __import__("MemfileRoot")
+    m.build()
+
+    mem.taskcall_deps.close()
+    mem.taskcall_result.close()

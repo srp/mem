@@ -1,0 +1,5 @@
+*~
+*.o
+*.pyc
+build/*
+.mem
