@@ -79,17 +79,10 @@ class Env(dict):
         self.update(ndict)
 
     def subst(self, value):
-        return value % self.__dict__["d"]
+        return value % self
 
-    def get(self, key, default=None):
-        return self.__dict__["d"].get(key, default)
-
-
-    def has_key(self, key):
-        return self.__dict__["d"].has_key(key)
-
-    def dep(self, key):
-        return self.EnvDep(self, key)
-
-    def deps(self, keys):
-        return [self.EnvDep(self, key) for key in keys]
+    def get_override(self, key, default=None):
+        if default:
+            return default
+        else:
+            return self[key]
