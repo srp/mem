@@ -1,2 +1,2 @@
 const char *
-hello(void);
+hello(int);

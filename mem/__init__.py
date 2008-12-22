@@ -3,6 +3,7 @@ import git_repo
 import os
 import sha
 import shelve
+import sys
 
 MEM_DIR = ".mem"
 MEM_GIT_DIR = os.path.join(MEM_DIR, "git-repo")
@@ -89,3 +90,15 @@ def with_env(**kwargs):
             return f(*args, **fkwargs)
         return new_f
     return decorator
+
+def fail(msg=None):
+    print "-" * 50
+    if msg:
+        sys.stderr.write("build failed: %s\n" % msg)
+    else:
+        sys.stderr.write("build failed.\n")
+
+    taskcall_deps.close()
+    taskcall_result.close()
+
+    sys.exit(1)
