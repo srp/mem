@@ -59,4 +59,17 @@ class Env(dict):
         return repr(self)
 
     def replace(self, **kwargs):
-        self.update(**kwargs)
+        for key in kwargs:
+            value = kwargs[key]
+            if type(value) == str:
+                kwargs[key] = value % self
+            if type(value) == list:
+                nlist = []
+                for el in value:
+                    if type(el) == str:
+                        nlist.append(el % self)
+                    else:
+                        nlist.append(el)
+                kwargs[key] = nlist
+
+        self = dict(**kwargs)
