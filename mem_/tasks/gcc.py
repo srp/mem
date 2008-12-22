@@ -6,8 +6,6 @@ import mem
 
 File = mem.nodes.File
 
-@mem.with_env(CFLAGS=[], CPPPATH=[])
-@mem.task
 def make_depends(source, CFLAGS, CPPPATH):
     mem.add_dep(mem.util.convert_to_file(source))
     includes = ["-I" + path for path in CPPPATH]
@@ -48,7 +46,7 @@ def t_prog(target, objs, CFLAGS=[]):
         mem.fail()
     return File(target)
 
-def obj(source_list, env=None, build_dir = None):
+def obj(source_list, env=None, build_dir = None, CFLAGS = None, CPPPATH = None):
     """ Take a list of sources and convert them to a correct object file """
     if not type(source_list) == list:
         source_list = [source_list]
@@ -58,7 +56,9 @@ def obj(source_list, env=None, build_dir = None):
     for source in nslist:
         (name, ignore) = os.path.splitext(source)
         target = os.path.join(BuildDir, name + ".o")
-        t_obj(target, source, env.get("CFLAGS"), env.get("CPPPATH"))
+        t_obj(target, source,
+              env.get_override("CFLAGS", CFLAGS),
+              env.get_override("CPPPATH", CPPPATH))
         targets.append(File(target))
 
     return targets
