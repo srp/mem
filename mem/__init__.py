@@ -81,10 +81,11 @@ def with_env(**kwargs):
             if fkwargs.has_key("env"):
                 fenv = fkwargs.pop("env")
                 for k in kwargs.keys():
-                    if fenv.has_key(k):
-                        fkwargs[k] = fenv[k]
-                    else:
-                        fkwargs[k] = kwargs[k]
+                    if not fkwargs.has_key(k):
+                        if fenv.has_key(k):
+                            fkwargs[k] = fenv[k]
+                        else:
+                            fkwargs[k] = kwargs[k]
             return f(*args, **fkwargs)
         return new_f
     return decorator
