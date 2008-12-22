@@ -29,45 +29,44 @@ class File(object):
     def store(self):
         mem.git.hash_object("-w", self.path)
 
-    def hash(self):
+    def get_hash(self):
         return mem.git.hash_object(self.path).strip()
 
-
 class Env(object):
-    class EnvDep(object):
-        def __init__(self, env, key):
-            self.env = env
-            self.key = key
-
-        def hash(self):
-            return self.env[self.key]
-
     def __init__(self, **kwargs):
-        self.__dict__.update(**kwargs)
+        self.__dict__["d"] = dict(**kwargs)
+
+    def __getattr__(self, key, *args):
+        if len(args) == 1:
+            return self.__dict__["d"].get(key, args[0])
+        else:
+            return self.__dict__["d"][key]
 
     def __setattr__(self, key, val):
-        self.__dict__[key] = val
+        self.__dict__["d"][key] = val
 
     def __getitem__(self, key):
-        return self.__dict__[key]
+        return self.__dict__["d"][key]
 
     def __setitem__(self, key):
-        self.__dict__[key] = val
+        self.__dict__["d"][key] = val
 
     def __repr__(self):
-        return "Env(" + \
-            " ".join("%s='%s'" % (k,v) for k,v in self.d.items()) + ")"
+        return "Env(" + " ".join("%s=%s" % (k, repr(v))
+                                 for k,v in self.__dict__["d"].items()) + ")"
 
     def __str__(self):
         return repr(self)
 
     def get(self, m, key):
         m.add_dep(self.dep(key))
-        return self.d[key]
+        return self.__dict__["d"][key]
+
+    def has_key(self, key):
+        return self.__dict__["d"].has_key(key)
 
     def dep(self, key):
-        return EnvDep(key)
+        return self.EnvDep(self, key)
 
     def deps(self, keys):
-        return [EnvDep(key) for key in keys]
-
+        return [self.EnvDep(self, key) for key in keys]

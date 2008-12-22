@@ -16,17 +16,20 @@ git = git_repo.GitRepo(MEM_GIT_DIR)
 taskcall_deps = shelve.open(MEM_DEPS_FILE)
 taskcall_result = shelve.open(MEM_RESULT_FILE)
 
-def mem_pickle(objs):
-    if hasattr(objs, "__iter__"):
-        return "\1" + "\0".join(mem_pickle(obj) for obj in objs) + "\1"
-    else:
-        if hasattr(objs, "mem_pickle"):
-            return objs.hash()
+def get_hash(*o):
+    def gh(objs):
+        if hasattr(objs, "__iter__"):
+            if isinstance(objs, dict):
+                return "\1" + "\0".join([gh(k) + "\3" + gh(objs[k])
+                                         for k in objs])
+            else:
+                return "\1" + "\0".join([gh(obj) for obj in objs]) + "\1"
         else:
-            return pickle.dumps(objs, 2)
-
-def sha1(*o):
-    return sha.new(mem_pickle(o)).hexdigest()
+            if hasattr(objs, "get_hash"):
+                return objs.get_hash()
+            else:
+                return pickle.dumps(objs, 2)
+    return sha.new(gh(o)).hexdigest()
 
 class DepsStack(object):
     def __init__(self):
@@ -48,7 +51,7 @@ deps_stack = DepsStack()
 
 def task(taskf):
     def f(*args, **kwargs):
-        tchash = sha1(taskf.__name__, taskf.__module__, args, kwargs)
+        tchash = get_hash(taskf.__name__, taskf.__module__, args, kwargs)
 
         def run():
             deps_stack.call_start()
@@ -56,14 +59,14 @@ def task(taskf):
             deps = deps_stack.call_finish()
 
             taskcall_deps[tchash] = deps
-            taskcall_result[sha1(tchash, deps)] = result
+            taskcall_result[get_hash(tchash, deps)] = result
             if (hasattr(result, "store")):
                 result.store()
             return result
 
         try:
             deps = taskcall_deps[tchash]
-            result = taskcall_result[sha1(tchash, deps)]
+            result = taskcall_result[get_hash(tchash, deps)]
             if (hasattr(result, "restore")):
                 result.restore()
             return result
@@ -71,3 +74,17 @@ def task(taskf):
             return run()
 
     return f
+
+def with_env(**kwargs):
+    def decorator(f):
+        def new_f(*args, **fkwargs):
+            if fkwargs.has_key("env"):
+                fenv = fkwargs.pop("env")
+                for k in kwargs.keys():
+                    if fenv.has_key(k):
+                        fkwargs[k] = fenv[k]
+                    else:
+                        fkwargs[k] = kwargs[k]
+            return f(*args, **fkwargs)
+        return new_f
+    return decorator
