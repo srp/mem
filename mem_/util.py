@@ -1,6 +1,7 @@
 import os
 
 import mem
+from mem_.nodes import File
 
 def get_build_dir(env, arg_func):
     """ return a valid build directory given the environment """
@@ -10,13 +11,19 @@ def get_build_dir(env, arg_func):
     elif arg_func:
         return arg_func(env)
 
-    func = env.BUILD_DIR_FUNC
+    try:
+        func = env.BUILD_DIR_FUNC
 
-    if func:
-        return func(env)
+        if func:
+            return func(env)
+    except AttributeError:
+        pass
 
-    if not env.BUILD_DIR:
-        return src_dir
+    try:
+        if not env.BUILD_DIR:
+            return src_dir
+    except AttributeError:
+        pass
 
     root = mem.root
     src_dir = mem.cwd
@@ -53,3 +60,23 @@ def flatten(l, ltypes=(list, tuple)):
                 l[i:i + 1] = l[i]
         i += 1
     return ltype(l)
+
+
+def convert_to_files(src_list):
+    """ Convert a list of mixed strings/files to files """
+    nlist = []
+    for src in src_list:
+        if isinstance(src, File):
+            nlist.append(src)
+        else:
+            nlist.append(File(src))
+    return nlist
+
+def convert_to_file(src):
+    if isinstance(src, File):
+        return src
+    else:
+        return File(src)
+
+def convert_cmd(lst):
+    return [str(a) for a in lst]
