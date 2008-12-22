@@ -2,20 +2,25 @@ import os
 
 import mem
 
-def get_build_dir(env, func):
+def get_build_dir(env, arg_func):
     """ return a valid build directory given the environment """
 
-    if func and type(func) == str:
-        return func
-    elif func:
-        return func(env)
+    if arg_func and type(arg_func) == str:
+        return arg_func
+    elif arg_func:
+        return arg_func(env)
 
-    root = mem.root
-    src_dir = mem.cwd
+    func = env.BUILD_DIR_FUNC
+
+    if func:
+        return func(env)
 
     if not env.BUILD_DIR:
         return src_dir
 
+    root = mem.root
+    src_dir = mem.cwd
+    
     if not src_dir.startswith(root):
         mem.fail("source dir (%s) is not a subdir of root (%s) "
                  "unable to generate a build path" % src_dir, root)
