@@ -1,0 +1,5 @@
+# -*- mode: python -*-
+import os
+
+def build(env):
+    return env.c.obj("goodbye.o", "goodbye.c", env=env)

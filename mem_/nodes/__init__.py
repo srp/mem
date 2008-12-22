@@ -4,7 +4,7 @@ import os
 
 class File(object):
     def __init__(self, path, filehash=None):
-        self.path = path
+        self.path = os.path.join(mem.cwd, path)
         self.hash = filehash or mem.git.hash_object(path).strip()
 
     def __repr__(self):
@@ -30,7 +30,13 @@ class File(object):
         mem.git.hash_object("-w", self.path)
 
     def get_hash(self):
+        # TODO: this gets repeated similar calls, cache them
         return mem.git.hash_object(self.path).strip()
+
+    def __getstate__(self):
+        """return the part of the state to pickle when acting as a result"""
+        return {"path": self.path,
+                "hash": self.hash}
 
 class Env(object):
     def __init__(self, **kwargs):

@@ -1,5 +1,7 @@
+#include "hello.h"
+
 const char *
 hello(void)
 {
-	return "hello!\n";
+	return "hello world!\n";
 }

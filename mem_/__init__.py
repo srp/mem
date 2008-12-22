@@ -1,0 +1,142 @@
+import cPickle as pickle
+import git_repo
+import imp
+import os
+import sha
+import shelve
+import sys
+
+MEM_DIR = ".mem"
+GIT_DIR = "git-repo"
+DEPS_FILE = "deps"
+RESULT_FILE = "result"
+
+class DepsStack(object):
+    def __init__(self):
+        self.deps = []
+
+    def call_start(self):
+        self.deps.append([])
+
+    def call_finish(self):
+        return self.deps.pop()
+
+    def add_dep(self, d):
+        self.deps[-1].append(d)
+
+    def add_deps(self, ds):
+        self.deps[-1].extend(ds)
+
+
+class Mem(object):
+    def __init__(self, root):
+        self.root = root
+        self.cwd = root
+
+        memdir = os.path.join(root, MEM_DIR)
+        if not os.path.exists(memdir):
+            os.mkdir(memdir)
+
+        self.git = git_repo.GitRepo(os.path.join(memdir, GIT_DIR))
+        self.taskcall_deps = shelve.open(os.path.join(memdir, DEPS_FILE))
+        self.taskcall_result = shelve.open(os.path.join(memdir, RESULT_FILE))
+
+        self.deps_stack = DepsStack()
+
+    def __setup__(self):
+        import mem_.nodes
+        self.nodes = mem_.nodes
+
+        import mem_.tasks.c
+        self.tasks = mem_.tasks
+
+    def import_memfile(self, f):
+        memfile_module = imp.new_module(f)
+        execfile(f, memfile_module.__dict__, memfile_module.__dict__)
+        return memfile_module
+
+    def build_dir(self, subdir, *args, **kwargs):
+        mf = self.import_memfile(os.path.join(subdir, "Memfile"))
+        d = os.path.abspath(os.curdir)
+        subdir = os.path.join(d, subdir)
+        os.chdir(subdir)
+        self.cwd = subdir
+        result = mf.build(*args, **kwargs)
+        os.chdir(d)
+        self.cwd = d
+        return result
+
+    def fail(self, msg=None):
+        print "-" * 50
+        if msg:
+            sys.stderr.write("build failed: %s\n" % msg)
+        else:
+            sys.stderr.write("build failed.\n")
+
+        self.taskcall_deps.close()
+        self.taskcall_result.close()
+
+        sys.exit(1)
+
+    def add_dep(self, d):
+        self.deps_stack.add_dep(d)
+
+    def add_deps(self, ds):
+        self.deps_stack.add_deps(ds)
+
+    def get_hash(self, *o):
+        def gh(objs):
+            if hasattr(objs, "__iter__"):
+                if isinstance(objs, dict):
+                    return "\1" + "\0".join([gh(k) + "\3" + gh(objs[k])
+                                             for k in objs])
+                else:
+                    return "\1" + "\0".join([gh(obj) for obj in objs]) + "\1"
+            else:
+                if hasattr(objs, "get_hash"):
+                    return objs.get_hash()
+                else:
+                    return pickle.dumps(objs, 2)
+        return sha.new(gh(o)).hexdigest()
+
+    def task(self, taskf):
+        def f(*args, **kwargs):
+            tchash = self.get_hash(taskf.__name__, taskf.__module__,
+                                   args, kwargs)
+
+            def run():
+                self.deps_stack.call_start()
+                result = taskf(*args, **kwargs)
+                deps = self.deps_stack.call_finish()
+
+                self.taskcall_deps[tchash] = deps
+                self.taskcall_result[self.get_hash(tchash, deps)] = result
+                if (hasattr(result, "store")):
+                    result.store()
+                return result
+
+            try:
+                deps = self.taskcall_deps[tchash]
+                result = self.taskcall_result[self.get_hash(tchash, deps)]
+                if (hasattr(result, "restore")):
+                    result.restore()
+                return result
+            except KeyError:
+                return run()
+
+        return f
+
+    def with_env(self, **kwargs):
+        def decorator(f):
+            def new_f(*args, **fkwargs):
+                if fkwargs.has_key("env"):
+                    fenv = fkwargs.pop("env")
+                    for k in kwargs.keys():
+                        if not fkwargs.has_key(k):
+                            if fenv.has_key(k):
+                                fkwargs[k] = fenv[k]
+                            else:
+                                fkwargs[k] = kwargs[k]
+                return f(*args, **fkwargs)
+            return new_f
+        return decorator
