@@ -58,3 +58,5 @@ class Env(dict):
     def __str__(self):
         return repr(self)
 
+    def replace(self, **kwargs):
+        self.update(**kwargs)
