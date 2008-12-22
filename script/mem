@@ -8,7 +8,7 @@ def find_root():
     d = os.path.abspath(os.curdir)
     while (not os.path.exists(os.path.join(d, "MemfileRoot.py"))):
         if d == "/":
-            sys.stderr.write("No 'MemfileRoot.py' found!")
+            sys.stderr.write("No 'MemfileRoot.py' found!\n")
             sys.exit(1)
         d = os.path.dirname(d)
     return d
