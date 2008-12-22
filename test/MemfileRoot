@@ -1,14 +1,35 @@
 # -*- mode: python -*-
+import sys
+import os
 
 import mem
 
-def build():
-    env = mem.nodes.Env(c = mem.tasks.c,
-                        CFLAGS = ["-O1", "-Wall", "-Wextra"])
+def setup_paths(env):
+    build_tools_path = os.path.join(mem.root, "build_tools", "lib", "python")
+    sys.path.append(build_tools_path)
 
-    goodbye_o = mem.build_dir("goodbye", env)
+    try:
+        os.makedirs(build_tools_path)
+    except OSError:
+        pass
+
+    try:
+        os.makedirs(env.BUILD_DIR)
+    except OSError:
+        pass
+
+
+def build():
+
+    env = mem.nodes.Env(c = mem.tasks.gcc,
+                        CFLAGS = ["-O1", "-Wall", "-Wextra"],
+                        BUILD_DIR = "mem_build")
+
+    setup_paths(env)
+
+
+    goodbye_o = mem.build("goodbye", env)
     env.c.prog("hello",
-               objs = [env.c.obj("hello.o", "hello.c", env=env),
-                       env.c.obj("main.o", "main.c", env=env),
+               objs = [env.c.obj(["main.c", "hello.c"], env=env),
                        goodbye_o],
                env=env)

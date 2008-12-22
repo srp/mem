@@ -47,7 +47,10 @@ class Mem(object):
         import mem_.nodes
         self.nodes = mem_.nodes
 
-        import mem_.tasks.c
+        import mem_.util
+        self.util = mem_.util
+
+        import mem_.tasks.gcc
         self.tasks = mem_.tasks
 
     def import_memfile(self, f):
@@ -55,7 +58,7 @@ class Mem(object):
         execfile(f, memfile_module.__dict__, memfile_module.__dict__)
         return memfile_module
 
-    def build_dir(self, subdir, *args, **kwargs):
+    def build(self, subdir, *args, **kwargs):
         mf = self.import_memfile(os.path.join(subdir, "Memfile"))
         d = os.path.abspath(os.curdir)
         subdir = os.path.join(d, subdir)
