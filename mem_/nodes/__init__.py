@@ -10,6 +10,9 @@ class File(object):
     def __repr__(self):
         return "File(path='%s', hash='%s')" % (self.path, self.hash)
 
+    def __str__(self):
+        return self.path
+
     def _is_changed(self):
         return mem.git.hash_object(self.path).strip() != self.hash
 
@@ -42,7 +45,7 @@ class Env(dict):
     def __getattr__(self, key):
         try:
             return self[key]
-        except KeyError e:
+        except KeyError:
             raise AttributeError("'Env' objec has no attribute '%s'" % key)
 
     def __setattr__(self, key, val):
