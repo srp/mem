@@ -1,11 +1,12 @@
 from string import split
 import os
+import imp
+import sys
 
-import mem
-from mem_.nodes import File
 
 def get_build_dir(env, arg_func):
     """ return a valid build directory given the environment """
+    import mem
 
     if arg_func and type(arg_func) == str:
         return arg_func
@@ -28,7 +29,7 @@ def get_build_dir(env, arg_func):
 
     root = mem.root
     src_dir = mem.cwd
-    
+
     if not src_dir.startswith(root):
         mem.fail("source dir (%s) is not a subdir of root (%s) "
                  "unable to generate a build path" % src_dir, root)
@@ -65,6 +66,7 @@ def flatten(l, ltypes=(list, tuple)):
 
 def convert_to_files(src_list):
     """ Convert a list of mixed strings/files to files """
+    from mem_.nodes import File
     nlist = []
     for src in src_list:
         if isinstance(src, File):
@@ -74,6 +76,7 @@ def convert_to_files(src_list):
     return nlist
 
 def convert_to_file(src):
+    from mem_.nodes import File
     if isinstance(src, File):
         return src
     else:
@@ -109,3 +112,25 @@ def with_env(**kwargs):
             return f(*args, **fkwargs)
         return new_f
     return decorator
+
+def ensure_file_dir(path):
+    try:
+        os.makedirs(os.path.dirname(path))
+    except OSError:
+        pass
+
+def ensure_dir(path):
+    try:
+        os.makedirs(path)
+    except OSError:
+        pass
+
+def import_module(name, fname=None):
+    if not fname:
+        fname = name + ".py"
+
+    sys.path.append("./")
+    m = imp.new_module(name)
+    m.__file__ = fname
+    execfile(fname, m.__dict__, m.__dict__)
+    return m
