@@ -106,7 +106,7 @@ class Mem(object):
                     return pickle.dumps(objs, 2)
         return sha.new(gh(o)).hexdigest()
 
-    def task(self, taskf):
+    def memoize(self, taskf):
         def f(*args, **kwargs):
             tchash = self.get_hash(taskf.__name__, taskf.__module__,
                                    args, kwargs)
@@ -116,6 +116,7 @@ class Mem(object):
                 result = taskf(*args, **kwargs)
                 deps = self.deps_stack.call_finish()
 
+                print deps
                 self.taskcall_deps[tchash] = deps
                 self.taskcall_result[self.get_hash(tchash, deps)] = result
                 if (hasattr(result, "store")):
@@ -132,18 +133,3 @@ class Mem(object):
                 return run()
 
         return f
-
-    def with_env(self, **kwargs):
-        def decorator(f):
-            def new_f(*args, **fkwargs):
-                if fkwargs.has_key("env"):
-                    fenv = fkwargs.pop("env")
-                    for k in kwargs.keys():
-                        if not fkwargs.has_key(k):
-                            if fenv.has_key(k):
-                                fkwargs[k] = fenv[k]
-                            else:
-                                fkwargs[k] = kwargs[k]
-                return f(*args, **fkwargs)
-            return new_f
-        return decorator

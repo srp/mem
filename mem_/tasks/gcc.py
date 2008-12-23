@@ -21,8 +21,8 @@ def make_depends(source, CFLAGS, CPPPATH):
     deps = deps[1:] # first element is the target (eg ".o"), drop it
     return DepFiles(dep for dep in deps if dep != '\\')
 
-@mem.with_env(CFLAGS=[], CPPPATH=[])
-@mem.task
+@mem.util.with_env(CFLAGS=[], CPPPATH=[])
+@mem.memoize
 def t_obj(target, source, CFLAGS, CPPPATH):
     if not os.path.exists(source):
         mem.fail("%s does not exist" % source)
@@ -37,8 +37,8 @@ def t_obj(target, source, CFLAGS, CPPPATH):
         mem.fail()
     return File(target)
 
-@mem.with_env(CFLAGS=[])
-@mem.task
+@mem.util.with_env(CFLAGS=[])
+@mem.memoize
 def t_prog(target, objs, CFLAGS=[]):
     mem.add_deps(objs)
     args = ["gcc", "-o", target] + CFLAGS + [o.path for o in objs]
