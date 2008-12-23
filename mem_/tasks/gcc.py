@@ -5,6 +5,7 @@ from subprocess import PIPE
 import mem
 
 File = mem.nodes.File
+DepFiles = mem.nodes.DepFiles
 
 def make_depends(source, CFLAGS, CPPPATH):
     mem.add_dep(mem.util.convert_to_file(source))
@@ -18,7 +19,7 @@ def make_depends(source, CFLAGS, CPPPATH):
         mem.fail()
 
     deps = deps[1:] # first element is the target (eg ".o"), drop it
-    return [File(dep) for dep in deps if dep != '\\']
+    return DepFiles(dep for dep in deps if dep != '\\')
 
 @mem.with_env(CFLAGS=[], CPPPATH=[])
 @mem.task
@@ -27,7 +28,7 @@ def t_obj(target, source, CFLAGS, CPPPATH):
         mem.fail("%s does not exist" % source)
 
     mem.add_dep(mem.util.convert_to_file(source))
-    mem.add_deps(make_depends(source, CFLAGS=CFLAGS, CPPPATH=CPPPATH))
+    mem.add_dep(make_depends(source, CFLAGS=CFLAGS, CPPPATH=CPPPATH))
     includes = ["-I" + path for path in CPPPATH]
     args = mem.util.convert_cmd(["gcc"] +  CFLAGS + includes +
                                 ["-c", "-o", target, source])
@@ -70,4 +71,3 @@ def prog(target, objs, env=None, build_dir = None):
     ntarget = os.path.join(BuildDir, target)
     t_prog(ntarget, nobjs, env.CFLAGS)
     return File(ntarget)
-

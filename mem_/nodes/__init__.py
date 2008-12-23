@@ -1,6 +1,8 @@
 from __future__ import with_statement
 import mem
 import os
+import cPickle as pickle
+import types
 
 class File(object):
     hash_cache = {}
@@ -46,6 +48,32 @@ class File(object):
         """return the part of the state to pickle when acting as a result"""
         return {"path": self.path,
                 "hash": self.hash}
+
+class DepFiles(object):
+    def __init__(self, paths):
+        # pickle doesn't work on generators, so convert to list first
+        if (isinstance(paths, types.GeneratorType)):
+            paths = list(paths)
+
+        self.paths = paths
+
+    def get_hash(self):
+        known = [(p, File.hash_cache[p])
+                 for p in self.paths if p in File.hash_cache]
+        unknown = [p for p in self.paths if p not in File.hash_cache]
+        unknown_hash = mem.git.hash_object("--", *unknown)
+        for i in range(len(unknown)):
+            File.hash_cache[unknown[i]] = unknown_hash[i]
+            known.append((unknown[i], unknown_hash[i]))
+        known.sort()
+        return pickle.dumps(known)
+
+    def __repr__(self):
+        return "DepFiles(paths=%s)" % (self.paths)
+
+    def __str__(self):
+        return self.path
+
 
 class Env(dict):
     def __getattr__(self, key):
