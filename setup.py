@@ -9,6 +9,6 @@ setup(name='Mem',
       author_email='srp@srparish.net',
       packages=['mem_',
                 'mem_.tasks',
-                'mem_.nodes'],
+                'mem_'],
       scripts=['script/mem'],
      )
