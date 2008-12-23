@@ -82,16 +82,14 @@ def convert_to_file(src):
 def convert_cmd(lst):
     return [str(a) for a in lst]
 
-def search_file(filename, search_path):
-   """Given a search path, find file
-   """
-   file_found = 0
-   paths = string.split(search_path, os.path.pathsep)
-   for path in paths:
-      if exists(os.path.join(path, filename)):
-          file_found = 1
-          break
-   if file_found:
-      return os.path.abspath(os.path.join(path, filename))
-   else:
-      return None
+def search_file(filename, paths):
+    """Given a search path, find file
+    """
+    if isinstance(paths, str):
+        paths = paths.split(os.path.pathsep)
+
+    for path in paths:
+        fp = os.path.join(path, filename)
+        if os.path.exists(fp):
+            return fp
+    return None
