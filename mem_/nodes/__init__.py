@@ -3,6 +3,8 @@ import mem
 import os
 
 class File(object):
+    hash_cache = {}
+
     def __init__(self, path, filehash=None):
         self.path = os.path.join(mem.cwd, path)
         self.hash = filehash or mem.git.hash_object(path).strip()
@@ -33,8 +35,12 @@ class File(object):
         mem.git.hash_object("-w", self.path)
 
     def get_hash(self):
-        # TODO: this gets repeated similar calls, cache them
-        return mem.git.hash_object(self.path).strip()
+        try:
+            return File.hash_cache[self.path]
+        except KeyError:
+            h = mem.git.hash_object(self.path).strip()
+            File.hash_cache[self.path] = h
+            return h
 
     def __getstate__(self):
         """return the part of the state to pickle when acting as a result"""
