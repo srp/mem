@@ -53,6 +53,10 @@ class Mem(object):
         import mem_.tasks.gcc
         self.tasks = mem_.tasks
 
+    def __shutdown__(self):
+        self.taskcall_deps.close()
+        self.taskcall_result.close()
+
     def import_memfile(self, f):
         memfile_module = imp.new_module(f)
         execfile(f, memfile_module.__dict__, memfile_module.__dict__)

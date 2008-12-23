@@ -23,5 +23,4 @@ if __name__ == '__main__':
     mfr_mod = mem.import_memfile("MemfileRoot")
     mfr_mod.build()
 
-    mem.taskcall_deps.close()
-    mem.taskcall_result.close()
+    mem.__shutdown__()
