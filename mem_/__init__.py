@@ -5,6 +5,9 @@ import os
 import sha
 import shelve
 import sys
+import types
+
+import util
 
 MEM_DIR = ".mem"
 GIT_DIR = "git-repo"
@@ -51,6 +54,8 @@ class Mem(object):
         self.util = mem_.util
 
         import mem_.tasks.gcc
+        import mem_.tasks.swig
+        import mem_.tasks.ar
         self.tasks = mem_.tasks
 
     def __shutdown__(self):
@@ -58,9 +63,7 @@ class Mem(object):
         self.taskcall_result.close()
 
     def import_memfile(self, f):
-        memfile_module = imp.new_module(f)
-        execfile(f, memfile_module.__dict__, memfile_module.__dict__)
-        return memfile_module
+        return util.import_module(f, f)
 
     def build(self, subdir, *args, **kwargs):
         mf = self.import_memfile(os.path.join(subdir, "Memfile"))
@@ -93,7 +96,9 @@ class Mem(object):
 
     def get_hash(self, *o):
         def gh(objs):
-            if hasattr(objs, "__iter__"):
+            if isinstance(objs, types.ModuleType):
+                return self.nodes.File(objs.__file__).get_hash()
+            elif hasattr(objs, "__iter__"):
                 if isinstance(objs, dict):
                     return "\1" + "\0".join([gh(k) + "\3" + gh(objs[k])
                                              for k in objs])
@@ -116,7 +121,6 @@ class Mem(object):
                 result = taskf(*args, **kwargs)
                 deps = self.deps_stack.call_finish()
 
-                print deps
                 self.taskcall_deps[tchash] = deps
                 self.taskcall_result[self.get_hash(tchash, deps)] = result
                 if (hasattr(result, "store")):
