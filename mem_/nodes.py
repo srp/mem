@@ -4,6 +4,17 @@ import os
 import cPickle as pickle
 import types
 
+import exceptions
+class NodeError(exceptions.Exception):
+	def __init__(self, message):
+            self.message = message
+
+	def __str__(self):
+            return self.message
+
+
+
+
 class File(object):
     hash_cache = {}
 
@@ -50,12 +61,31 @@ class File(object):
                 "hash": self.hash}
 
 class DepFiles(object):
+    """ A 'batch' of dependencies that a treated as a group. """
+
     def __init__(self, paths):
+        """ This initializer may take one of three things. A string
+        reperesenting a file, a mem.nodes.File object or a mem.nodes.DepFiles
+        object. It may either take a single object or a list of said objects """
         # pickle doesn't work on generators, so convert to list first
         if (isinstance(paths, types.GeneratorType)):
             paths = list(paths)
 
-        self.paths = paths
+        if not isinstance(paths, list):
+            paths = [paths]
+
+        self.paths = []
+        for path in paths:
+            if isinstance(path, str):
+                self.paths.append(path)
+            elif isinstance(path, DepFiles):
+                self.paths.extend(path.paths)
+            elif isinstance(path, File):
+                self.paths.append(str(path))
+            else:
+                raise NodeError("unexpected argument in DepFiles %s" % str(path))
+
+
 
     def get_hash(self):
         known = [(p, File.hash_cache[p])
@@ -72,7 +102,7 @@ class DepFiles(object):
         return "DepFiles(paths=%s)" % (self.paths)
 
     def __str__(self):
-        return self.path
+        return self.__repr__()
 
 
 class Env(dict):
@@ -105,7 +135,7 @@ class Env(dict):
                         nlist.append(el)
                 self[key] = nlist
             else:
-                self[key] == value
+                self[key] = value
 
     def subst(self, value):
         return value % self
