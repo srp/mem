@@ -31,6 +31,7 @@ def find_produces(c, target, source, SWIGFLAGS, CFLAGS, CPPPATH):
     ret = []
     mem.add_dep(make_depends(c, target, source,
                              CFLAGS, ["./"] + CPPPATH))
+    print source
     src_data = open(source).read()
     output = re_module.findall(src_data)
     outdir = os.path.dirname(target)
@@ -82,7 +83,8 @@ def to_c(target, source, SWIGFLAGS, CFLAGS, CPPPATH, c):
 def obj(sources, env=None, build_dir = None, c=None,
         SWIGFLAGS=None, CFLAGS=None, CPPPATH=None):
     if not type(sources) == list:
-        source_list = [sources]
+        sources = [sources]
+
     nslist = mem.util.flatten(sources)
     BuildDir = mem.util.get_build_dir(env, build_dir)
     nslist = mem.util.flatten(sources)
