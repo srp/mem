@@ -66,12 +66,16 @@ class Mem(object):
         return util.import_module(f, f)
 
     def build(self, subdir, *args, **kwargs):
+        memfunc = "build"
+        if kwargs.has_key("MEM_FUNC"):
+            memfunc = kwargs.pop("MEM_FUNC")
         mf = self.import_memfile(os.path.join(subdir, "Memfile"))
         d = os.path.abspath(os.curdir)
         subdir = os.path.join(d, subdir)
         os.chdir(subdir)
         self.cwd = subdir
-        result = mf.build(*args, **kwargs)
+        func = mf.__dict__[memfunc]
+        result = apply(func, args, kwargs)
         os.chdir(d)
         self.cwd = d
         return result
