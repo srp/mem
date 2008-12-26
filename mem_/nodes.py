@@ -20,6 +20,9 @@ class File(object):
 
     def __init__(self, path, filehash=None):
         self.path = os.path.join(mem.cwd, path)
+        if not os.path.exists(path):
+            raise NodeError("%s does not exist!" % path)
+
         self.hash = filehash or mem.git.hash_object(path).strip()
 
     def __repr__(self):
@@ -110,10 +113,10 @@ class Env(dict):
         try:
             return self[key]
         except KeyError:
-            raise AttributeError("'Env' objec has no attribute '%s'" % key)
+            raise AttributeError("'Env' object has no attribute '%s'" % key)
 
     def __setattr__(self, key, val):
-        self[key] = val
+	self[key] = val
 
     def __repr__(self):
         return "Env(" + " ".join("%s=%s" % (k, repr(v))
