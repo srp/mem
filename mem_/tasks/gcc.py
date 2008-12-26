@@ -25,7 +25,7 @@ def make_depends(target, source, CFLAGS, CPPPATH):
 
 @mem.util.with_env(CFLAGS=[], CPPPATH=[])
 @mem.memoize
-def t_obj(target, source, CFLAGS, CPPPATH):
+def t_c_obj(target, source, CFLAGS, CPPPATH):
     if not os.path.exists(str(source)):
         mem.fail("%s does not exist" % source)
 
@@ -33,6 +33,26 @@ def t_obj(target, source, CFLAGS, CPPPATH):
     mem.add_dep(make_depends(target, source, CFLAGS=CFLAGS, CPPPATH=CPPPATH))
     includes = ["-I" + path for path in CPPPATH]
     args = mem.util.convert_cmd(["gcc"] +  CFLAGS + includes +
+                                ["-I" +
+                                 os.path.dirname(target)] +
+                                ["-c", "-o", target, source])
+    print " ".join(args)
+
+    mem.util.ensure_file_dir(target)
+    if subprocess.call(args) != 0:
+        mem.fail()
+    return File(target)
+
+@mem.util.with_env(CXXFLAGS=[], CPPPATH=[])
+@mem.memoize
+def t_cpp_obj(target, source, CXXFLAGS, CPPPATH):
+    if not os.path.exists(str(source)):
+        mem.fail("%s does not exist" % source)
+
+    mem.add_dep(mem.util.convert_to_file(source))
+    mem.add_dep(make_depends(target, source, CFLAGS=CXXFLAGS, CPPPATH=CPPPATH))
+    includes = ["-I" + path for path in CPPPATH]
+    args = mem.util.convert_cmd(["g++"] +  CXXFLAGS + includes +
                                 ["-I" +
                                  os.path.dirname(target)] +
                                 ["-c", "-o", target, source])
@@ -62,19 +82,30 @@ def t_prog(target, objs, CFLAGS, LIBS, LIBPATH):
     return File(target)
 
 def obj(source_list, env=None, build_dir = None,
-        CFLAGS = None, CPPPATH = None):
+        CFLAGS = None, CPPPATH = None, CXXFLAGS=None):
     """ Take a list of sources and convert them to a correct object file """
     if not type(source_list) == list:
         source_list = [source_list]
+
     nslist = mem.util.flatten(source_list)
     BuildDir = mem.util.get_build_dir(env, build_dir)
     targets = []
     for source in nslist:
-        (name, ignore) = os.path.splitext(str(source))
+        (name, ext) = os.path.splitext(str(source))
         target = os.path.join(BuildDir, name + ".o")
-        t_obj(target, source,
-              env.get_override("CFLAGS", CFLAGS),
-              env.get_override("CPPPATH", CPPPATH))
+
+        if ext == ".c":
+            t_c_obj(target, source,
+                    env.get_override("CFLAGS", CFLAGS),
+                    env.get_override("CPPPATH", CPPPATH))
+        elif ext == ".cpp":
+            t_cpp_obj(target, source,
+                    env.get_override("CXXFLAGS", CXXFLAGS),
+                    env.get_override("CPPPATH", CPPPATH))
+        elif ext == ".h":
+            continue
+        else:
+            mem.fail("Don't know how to build %s" % source)
         targets.append(File(target))
 
     return targets
