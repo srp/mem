@@ -88,6 +88,9 @@ def convert_cmd(lst):
 def search_file(filename, paths):
     """Given a search path, find file
     """
+    if os.path.exists(filename):
+        return filename
+
     if isinstance(paths, str):
         paths = paths.split(os.path.pathsep)
 
