@@ -13,7 +13,7 @@ re_module = re.compile(r'%module(?:\s*\(.*\))?\s+(.+)')
 def make_depends(c, target, source, CFLAGS, CPPPATH):
     files = []
     for path in CPPPATH:
-        file = mem.util.search_file(source, path)
+        file = mem.util.search_file(str(source), path)
         if file:
             files.append(file)
             if file.endswith(".h"):
@@ -32,20 +32,20 @@ def find_produces(c, target, source, SWIGFLAGS, CFLAGS, CPPPATH):
     mem.add_dep(make_depends(c, target, source,
                              CFLAGS, ["./"] + CPPPATH))
     print source
-    src_data = open(source).read()
+    src_data = open(str(source)).read()
     output = re_module.findall(src_data)
     outdir = os.path.dirname(target)
     mnames = None
     if "-python" in SWIGFLAGS and "-noproxy" not in SWIGFLAGS:
             if mnames is None:
-                mnames = re_module.findall(open(source).read())
+                mnames = re_module.findall(open(str(source)).read())
             ret.extend(map(lambda m, d=outdir:
                                   os.path.join(outdir, m + ".py"), mnames))
     if "-java" in SWIGFLAGS:
         if mnames is None:
             mnames = re_module.findall(open(src).read())
             java_files = map(lambda m: [m + ".java", m + "JNI.java"], mnames)
-            java_files = SCons.Util.flatten(java_files)
+            java_files = mem.util.flatten(java_files)
         if outdir:
             java_files = map(lambda j, o=outdir:
                                   os.path.join(o, j), java_files)
@@ -94,7 +94,7 @@ def obj(sources, env=None, build_dir = None, c=None,
     c = env.get_override("c", c)
     targets = []
     for source in nslist:
-        (name, ignore) = os.path.splitext(source)
+        (name, ignore) = os.path.splitext(str(source))
         target = os.path.join(BuildDir, name + "_wrap.c")
         targets.append(to_c(target, source,
                             env.get_override("SWIGFLAGS", SWIGFLAGS),
