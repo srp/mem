@@ -56,6 +56,10 @@ class Mem(object):
         import mem_.tasks.gcc
         import mem_.tasks.swig
         import mem_.tasks.ar
+        import mem_.tasks.asciidoc
+        import mem_.tasks.command
+        import mem_.tasks.copy
+
         self.tasks = mem_.tasks
 
     def __shutdown__(self):
