@@ -6,6 +6,7 @@ import mem
 @mem.memoize
 def t_asciidoc(target, source):
     """ Runs asciidoc compiler on specified files """
+    mem.add_dep(mem.util.convert_to_file(source))
     cmd = "asciidoc --out-file=%s %s" % (str(target), str(source))
     print cmd
     (stat, out) = commands.getstatusoutput(cmd)

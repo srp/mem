@@ -59,6 +59,7 @@ def find_produces(c, target, source, SWIGFLAGS, CFLAGS, CPPPATH):
 @mem.util.with_env(SWIGFLAGS=[], CFLAGS=[], CPPPATH=[], c=None)
 @mem.memoize
 def to_c(target, source, SWIGFLAGS, CFLAGS, CPPPATH, c):
+    mem.add_dep(mem.util.convert_to_file(source))
     targets = find_produces(c, target,
                             source, SWIGFLAGS, CFLAGS, CPPPATH)
     args = mem.util.convert_cmd(['swig',

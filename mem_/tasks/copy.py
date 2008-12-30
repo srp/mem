@@ -61,13 +61,14 @@ def copy(target, source):
     return always_copy(target, source)
 
 
-def always_copy(target, source):
+def always_copy(target, sources):
     """ copies the sources to the target """
-    if not isinstance(source, list):
-        source = [source]
-    print "source", source
+    if not isinstance(sources, list):
+        sources = [sources]
+    mem.add_dep(mem.nodes.DepFiles(sources))
+    print "sources", sources
     returned = []
-    for src in source:
+    for src in sources:
         print "copying %s to %s" % (src, target)
         returned.extend(copytree(src, target))
 
