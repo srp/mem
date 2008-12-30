@@ -125,6 +125,9 @@ class Env(dict):
     def __str__(self):
         return repr(self)
 
+    def copy(self):
+        return Env(dict.copy(self))
+
     def replace(self, **kwargs):
         for key, value in kwargs.items():
             if type(value) == str:
