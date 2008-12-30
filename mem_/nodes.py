@@ -23,7 +23,7 @@ class File(object):
         if not os.path.exists(path):
             raise NodeError("%s does not exist!" % path)
 
-        self.hash = filehash or mem.git.hash_object(path).strip()
+        self.hash = filehash or self.get_hash()
 
     def __repr__(self):
         return "File(path='%s', hash='%s')" % (self.path, self.hash)
@@ -32,14 +32,13 @@ class File(object):
         return self.path
 
     def _is_changed(self):
-        return mem.git.hash_object(self.path).strip() != self.hash
+        return self.get_hash() != self.hash
 
     def restore(self):
         if not os.path.exists(self.path):
             self._restore()
-        else:
-            if self._is_changed():
-                self._restore()
+        elif self._is_changed():
+            self._restore()
 
     def _restore(self):
         with open(self.path, "wb") as f:
