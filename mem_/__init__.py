@@ -58,7 +58,7 @@ class Mem(object):
         import mem_.tasks.ar
         import mem_.tasks.asciidoc
         import mem_.tasks.command
-        import mem_.tasks.copy
+        import mem_.tasks.fs
 
         self.tasks = mem_.tasks
 
