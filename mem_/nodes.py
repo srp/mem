@@ -41,6 +41,8 @@ class File(object):
             self._restore()
 
     def _restore(self):
+        if os.path.exists(self.path):
+            os.unlink(self.path)
         with open(self.path, "wb") as f:
             print "Restoring: " + self.path
             mem.git.cat_file("blob", self.hash, stdout=f)
