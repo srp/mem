@@ -1,6 +1,7 @@
 import os
 import subprocess
 from subprocess import PIPE
+from threading import Thread
 
 import mem
 
@@ -91,26 +92,33 @@ def obj(source_list, env=None, build_dir = None,
 
     nslist = mem.util.flatten(source_list)
     BuildDir = mem.util.get_build_dir(env, build_dir)
-    targets = []
+    threads = []
+
     for source in nslist:
         (name, ext) = os.path.splitext(str(source))
         target = os.path.join(BuildDir, name + ".o")
 
         if ext == ".c":
-            t_c_obj(target, source,
-                    env.get_override("CFLAGS", CFLAGS),
-                    env.get_override("CPPPATH", CPPPATH))
+            t = mem.util.Runable(t_c_obj, target, source,
+                                 env.get_override("CFLAGS", CFLAGS),
+                                 env.get_override("CPPPATH", CPPPATH))
+            t.start()
+
         elif ext == ".cpp":
-            t_cpp_obj(target, source,
-                    env.get_override("CXXFLAGS", CXXFLAGS),
-                    env.get_override("CPPPATH", CPPPATH))
+            t = mem.util.Runable(t_cpp_obj, target, source,
+                                 env.get_override("CXXFLAGS", CXXFLAGS),
+                                 env.get_override("CPPPATH", CPPPATH))
+            t.start()
         elif ext == ".h":
             continue
         else:
             mem.fail("Don't know how to build %s" % source)
-        targets.append(File(target))
+        threads.append(t)
 
-    return targets
+    for t in threads:
+        t.join()
+
+    return [t.result for t in threads]
 
 def prog(target, objs, env=None, CFLAGS=[], LIBS=[], LIBPATH=[],
          build_dir = None):

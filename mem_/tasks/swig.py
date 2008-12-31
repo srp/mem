@@ -95,22 +95,32 @@ def obj(sources, env=None, build_dir = None, c=None,
 
     c = env.get_override("c", c)
     targets = []
+    threads = []
     for source in nslist:
         (name, ignore) = os.path.splitext(str(source))
         target = os.path.join(BuildDir, name + "_wrap.c")
-        targets.append(to_c(target, source,
-                            env.get_override("SWIGFLAGS", SWIGFLAGS),
-                            env.get_override("SWIG_CFLAGS", cflags),
-                            env.get_override("CPPPATH", CPPPATH),
-                            c))
+        t = mem.util.Runable(
+            to_c, target, source,
+            env.get_override("SWIGFLAGS", SWIGFLAGS),
+            env.get_override("SWIG_CFLAGS", cflags),
+            env.get_override("CPPPATH", CPPPATH),
+            c)
+        t.start()
+        threads.append(t)
         targets.append(target)
 
+    for t in threads:
+        t.join()
+        targets.extend(t.result)
+
     ntargets = []
+    ctargets = []
     for target in mem.util.flatten(targets):
         if str(target).endswith(".c"):
-            ntargets.append(env.c.obj(target, env=env, CFLAGS=cflags))
+            ctargets.append(target)
         else:
             ntargets.append(target)
+    ntargets.extend(env.c.obj(ctargets, env=env, CFLAGS=cflags))
+
 
     return mem.util.convert_to_files(mem.util.flatten(ntargets))
-

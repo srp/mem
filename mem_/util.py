@@ -2,6 +2,7 @@ from string import split
 import os
 import imp
 import sys
+from threading import Thread
 
 
 def get_build_dir(env, arg_func):
@@ -137,3 +138,15 @@ def import_module(name, fname=None):
     m.__file__ = fname
     execfile(fname, m.__dict__, m.__dict__)
     return m
+
+
+class Runable(Thread):
+    def __init__(self, f, *args, **kwargs):
+        Thread.__init__(self)
+        self.f = f
+        self.args = args
+        self.kwargs = kwargs
+
+    def run(self):
+        self.result = self.f(*(self.args), **(self.kwargs))
+
