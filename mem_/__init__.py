@@ -9,6 +9,8 @@ import types
 
 import util
 
+import threading
+
 MEM_DIR = ".mem"
 GIT_DIR = "git-repo"
 DEPS_FILE = "deps"
@@ -44,7 +46,7 @@ class Mem(object):
         self.taskcall_deps = shelve.open(os.path.join(memdir, DEPS_FILE))
         self.taskcall_result = shelve.open(os.path.join(memdir, RESULT_FILE))
 
-        self.deps_stack = DepsStack()
+        self.local = threading.local()
 
     def __setup__(self):
         import mem_.nodes
@@ -96,11 +98,18 @@ class Mem(object):
 
         sys.exit(1)
 
+    def deps_stack(self):
+        try:
+            return self.local.deps_stack
+        except AttributeError:
+            self.local.deps_stack = DepsStack()
+            return self.local.deps_stack
+
     def add_dep(self, d):
-        self.deps_stack.add_dep(d)
+        self.deps_stack().add_dep(d)
 
     def add_deps(self, ds):
-        self.deps_stack.add_deps(ds)
+        self.deps_stack().add_deps(ds)
 
     def get_hash(self, *o):
         def gh(objs):
@@ -125,9 +134,9 @@ class Mem(object):
                                    args, kwargs)
 
             def run():
-                self.deps_stack.call_start()
+                self.deps_stack().call_start()
                 result = taskf(*args, **kwargs)
-                deps = self.deps_stack.call_finish()
+                deps = self.deps_stack().call_finish()
 
                 self.taskcall_deps[tchash] = deps
                 self.taskcall_result[self.get_hash(tchash, deps)] = result
