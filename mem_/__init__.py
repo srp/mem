@@ -140,15 +140,31 @@ class Mem(object):
 
                 self.taskcall_deps[tchash] = deps
                 self.taskcall_result[self.get_hash(tchash, deps)] = result
-                if (hasattr(result, "store")):
-                    result.store()
+
+                def store(o):
+                    if (hasattr(o, "store")):
+                        o.store()
+                    elif (hasattr(o, "__iter__")):
+                        for el in o:
+                            store(el)
+
+                store(result)
+
                 return result
 
             try:
                 deps = self.taskcall_deps[tchash]
                 result = self.taskcall_result[self.get_hash(tchash, deps)]
-                if (hasattr(result, "restore")):
-                    result.restore()
+
+                def restore(o):
+                    if (hasattr(o, "restore")):
+                        o.restore()
+                    elif (hasattr(o, "__iter__")):
+                        for el in o:
+                            restore(el)
+
+                restore(result)
+
                 return result
             except KeyError:
                 return run()
