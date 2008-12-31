@@ -25,12 +25,13 @@ def make_depends(c, target, source, CFLAGS, CPPPATH):
 
                 break
 
-    return mem.nodes.DepFiles(mem.util.flatten(files))
+    return mem.util.flatten(files)
 
 def find_produces(c, target, source, SWIGFLAGS, CFLAGS, CPPPATH):
     ret = []
-    mem.add_dep(make_depends(c, target, source,
-                             CFLAGS, ["./"] + CPPPATH))
+    mem.add_deps([mem.nodes.File(f)
+                  for f in make_depends(c, target, source,
+                                        CFLAGS, ["./"] + CPPPATH)])
     print source
     src_data = open(str(source)).read()
     output = re_module.findall(src_data)

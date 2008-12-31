@@ -9,7 +9,7 @@ import mem
 def t_ar(target, sources, ARARGS, ARCMD):
     if not isinstance(sources, list):
         sources = [sources]
-    mem.add_dep(mem.nodes.DepFiles(sources))
+    mem.add_deps(sources)
 
     args = mem.util.convert_cmd([ARCMD] + ARARGS + [target] + sources)
 
@@ -33,4 +33,3 @@ def ar(target, sources, LIBSUFFIX=".a", LIBPREFIX="lib",
     ntarget = os.path.join(BuildDir, target)
 
     return t_ar(ntarget, sources, env=env)
-

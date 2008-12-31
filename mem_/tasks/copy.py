@@ -65,7 +65,7 @@ def always_copy(target, sources):
     """ copies the sources to the target """
     if not isinstance(sources, list):
         sources = [sources]
-    mem.add_dep(mem.nodes.DepFiles(sources))
+    mem.add_deps([mem.nodes.File(s) for s in sources])
     print "sources", sources
     returned = []
     for src in sources:

@@ -5,7 +5,6 @@ from subprocess import PIPE
 import mem
 
 File = mem.nodes.File
-DepFiles = mem.nodes.DepFiles
 
 def make_depends(target, source, CFLAGS, CPPPATH):
     mem.add_dep(mem.util.convert_to_file(source))
@@ -21,7 +20,7 @@ def make_depends(target, source, CFLAGS, CPPPATH):
         mem.fail()
 
     deps = deps[1:] # first element is the target (eg ".o"), drop it
-    return DepFiles(dep for dep in deps if dep != '\\')
+    return [dep for dep in deps if dep != '\\']
 
 @mem.util.with_env(CFLAGS=[], CPPPATH=[])
 @mem.memoize
@@ -30,7 +29,8 @@ def t_c_obj(target, source, CFLAGS, CPPPATH):
         mem.fail("%s does not exist" % source)
 
     mem.add_dep(mem.util.convert_to_file(source))
-    mem.add_dep(make_depends(target, source, CFLAGS=CFLAGS, CPPPATH=CPPPATH))
+    mem.add_deps([File(f) for f in
+                  make_depends(target, source, CFLAGS=CFLAGS, CPPPATH=CPPPATH)])
     includes = ["-I" + path for path in CPPPATH]
     args = mem.util.convert_cmd(["gcc"] +  CFLAGS + includes +
                                 ["-I" +
@@ -50,7 +50,9 @@ def t_cpp_obj(target, source, CXXFLAGS, CPPPATH):
         mem.fail("%s does not exist" % source)
 
     mem.add_dep(mem.util.convert_to_file(source))
-    mem.add_dep(make_depends(target, source, CFLAGS=CXXFLAGS, CPPPATH=CPPPATH))
+    mem.add_deps([File(f) for f in
+                  make_depends(target, source,
+                               CFLAGS=CXXFLAGS, CPPPATH=CPPPATH)])
     includes = ["-I" + path for path in CPPPATH]
     args = mem.util.convert_cmd(["g++"] +  CXXFLAGS + includes +
                                 ["-I" +
