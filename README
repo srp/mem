@@ -1,0 +1,9 @@
+mem: build by memoization
+
+to install:
+
+   $ python setup.py build
+   $ sudo python setup.py install
+
+for usage example see the "test/" subdirectory
+
