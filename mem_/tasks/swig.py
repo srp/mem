@@ -4,35 +4,23 @@ import subprocess
 from subprocess import PIPE
 import mem
 
-
-re_import = re.compile('[ \t]*[%,#][ \t]*(?:include|import)[ \t]*'
-                       '(?:<|")([^>"]+)(?:>|")')
 # Match '%module test', as well as '%module(directors="1") test'
 re_module = re.compile(r'%module(?:\s*\(.*\))?\s+(.+)')
 
-def make_depends(c, target, source, CFLAGS, CPPPATH):
-    files = []
-    for path in CPPPATH:
-        file = mem.util.search_file(str(source), path)
-        if file:
-            files.append(file)
-            if file.endswith(".h"):
-                files.append(c.make_depends(target, file, CFLAGS, CPPPATH))
-                break
-            elif file.endswith(".i"):
-                for name in re_import.findall(open(file).read()):
-                    return make_depends(c, target, name, CFLAGS, CPPPATH)
+def make_depends(source, SWIGFLAGS):
+    args = mem.util.convert_cmd(["swig"] + SWIGFLAGS +
+                                ["-M", "-o", "-", source])
+    print " ".join(args)
+    p = subprocess.Popen(args, stdin = PIPE, stdout = PIPE)
+    deps = p.stdout.read().split()
+    if p.wait() != 0:
+        mem.fail()
 
-                break
-
-    return mem.util.flatten(files)
+    deps = deps[1:] # first element is the target (eg ".c"), drop it
+    return [dep for dep in deps if dep != '\\']
 
 def find_produces(c, target, source, SWIGFLAGS, CFLAGS, CPPPATH):
     ret = []
-    mem.add_deps([mem.nodes.File(f)
-                  for f in make_depends(c, target, source,
-                                        CFLAGS, ["./"] + CPPPATH)])
-    print source
     src_data = open(str(source)).read()
     output = re_module.findall(src_data)
     outdir = os.path.dirname(target)
@@ -61,8 +49,10 @@ def find_produces(c, target, source, SWIGFLAGS, CFLAGS, CPPPATH):
 @mem.memoize
 def to_c(target, source, SWIGFLAGS, CFLAGS, CPPPATH, c):
     mem.add_dep(mem.util.convert_to_file(source))
-    targets = find_produces(c, target,
-                            source, SWIGFLAGS, CFLAGS, CPPPATH)
+    mem.add_deps([mem.nodes.File(f) for f in make_depends(source, SWIGFLAGS)])
+
+    targets = find_produces(c, target, source, SWIGFLAGS, CFLAGS, CPPPATH)
+    targets.append(target)
     args = mem.util.convert_cmd(['swig',
                                  '-o',
                                  target,
@@ -107,7 +97,6 @@ def obj(sources, env=None, build_dir = None, c=None,
             c)
         t.start()
         threads.append(t)
-        targets.append(target)
 
     for t in threads:
         t.join()

@@ -8,7 +8,6 @@ import mem
 File = mem.nodes.File
 
 def make_depends(target, source, CFLAGS, CPPPATH):
-    mem.add_dep(mem.util.convert_to_file(source))
     includes = ["-I" + path for path in CPPPATH]
     args = mem.util.convert_cmd(["gcc"] + CFLAGS +
                                 ["-I" +
