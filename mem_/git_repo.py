@@ -1,4 +1,5 @@
 import os
+import sha
 from subprocess import Popen, PIPE
 
 ## a class allowing easy interaction with git via python
@@ -26,6 +27,25 @@ class GitRepo(object):
 
         if not os.path.exists(repo_dir):
             self.init("--bare", "--quiet")
+
+    def hash_object(self, *args, **kwargs):
+        if kwargs != {} or "-w" in args:
+            return self.call("hash-object", *args, **kwargs)
+
+        hashs = []
+        for arg in args:
+            if arg == "--":
+                continue
+            f = open(arg, "rb")
+            s = sha.sha()
+            s.update("blob %d\0" % os.path.getsize(arg))
+            data = f.read(1<<16)
+            while data != '':
+                s.update(data) # 64k blocks
+                data = f.read(1<<16)
+            hashs.append(s.hexdigest())
+            f.close()
+        return "\n".join(hashs) + "\n"
 
     def call(self, *args, **kwargs):
         stdin = kwargs.get("stdin", PIPE)
