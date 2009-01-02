@@ -41,6 +41,8 @@ class File(object):
             self._restore()
 
     def _restore(self):
+        if not os.path.exists(os.path.dirname(self.path)):
+	    os.makedirs(os.path.dirname(self.path))
         if os.path.exists(self.path):
             os.unlink(self.path)
         with open(self.path, "wb") as f:
