@@ -9,7 +9,7 @@ re_module = re.compile(r'%module(?:\s*\(.*\))?\s+(.+)')
 
 def make_depends(source, SWIGFLAGS):
     args = mem.util.convert_cmd(["swig"] + SWIGFLAGS +
-                                ["-M", "-o", "-", source])
+                                ["-M", source])
     print " ".join(args)
     p = subprocess.Popen(args, stdin = PIPE, stdout = PIPE)
     deps = p.stdout.read().split()
