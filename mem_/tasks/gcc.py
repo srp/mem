@@ -94,6 +94,7 @@ def obj(source_list, env=None, build_dir = None,
     threads = []
 
     for source in nslist:
+        source = os.path.join(os.getcwd(), str(source))
         (name, ext) = os.path.splitext(str(source))
         target = os.path.join(BuildDir, name + ".o")
 
