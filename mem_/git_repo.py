@@ -36,6 +36,11 @@ class GitRepo(object):
         for arg in args:
             if arg == "--":
                 continue
+            if not os.path.exists(arg):
+                # if the file doesn't exist, hash to something unique
+                # so that cache lookup will fail
+                hashs.append("NOT FOUND")
+                continue
             f = open(arg, "rb")
             s = sha.sha()
             s.update("blob %d\0" % os.path.getsize(arg))
