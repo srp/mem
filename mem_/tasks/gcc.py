@@ -1,6 +1,7 @@
 import os
 import subprocess
 from subprocess import PIPE
+import sys
 from threading import Thread
 
 import mem

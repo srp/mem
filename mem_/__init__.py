@@ -46,6 +46,7 @@ class Mem(object):
         self.taskcall_deps = shelve.open(os.path.join(memdir, DEPS_FILE))
         self.taskcall_result = shelve.open(os.path.join(memdir, RESULT_FILE))
 
+        self.thread_limit = None
         self.local = threading.local()
 
     def __setup__(self):
@@ -63,10 +64,15 @@ class Mem(object):
         import mem_.tasks.fs
 
         self.tasks = mem_.tasks
+        self.failed = False
 
     def __shutdown__(self):
         self.taskcall_deps.close()
         self.taskcall_result.close()
+
+    def concurrency(self, threads):
+        if (threads > 0):
+            self.thread_limit = threading.Semaphore(threads)
 
     def import_memfile(self, f):
         return util.import_module(f, f)
@@ -87,11 +93,22 @@ class Mem(object):
         return result
 
     def fail(self, msg=None):
+        if self.failed:
+            sys.exit(1)
+
         print "-" * 50
         if msg:
             sys.stderr.write("build failed: %s\n" % msg)
         else:
             sys.stderr.write("build failed.\n")
+
+        self.failed = True
+
+        # Make sure all possible threads get released
+        if not self.thread_limit == None:
+            tmp = threading.activeCount()
+            for _ in range(tmp):
+                self.thread_limit.release()
 
         self.taskcall_deps.close()
         self.taskcall_result.close()
@@ -136,6 +153,9 @@ class Mem(object):
             def run():
                 self.deps_stack().call_start()
                 result = taskf(*args, **kwargs)
+                if self.failed:
+                    sys.exit(1)
+
                 deps = self.deps_stack().call_finish()
 
                 self.taskcall_deps[tchash] = deps

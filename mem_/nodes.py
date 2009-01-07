@@ -19,7 +19,10 @@ class File(object):
     hash_cache = {}
 
     def __init__(self, path, filehash=None):
+	import mem
         self.path = os.path.join(mem.cwd, path)
+	if mem.failed:
+		sys.exit(1)
         if not os.path.exists(path):
             raise NodeError("%s does not exist!" % path)
 

@@ -2,8 +2,7 @@ from string import split
 import os
 import imp
 import sys
-from threading import Thread
-
+from threading import Thread, Semaphore
 
 def get_build_dir(env, arg_func):
     """ return a valid build directory given the environment """
@@ -148,5 +147,25 @@ class Runable(Thread):
         self.kwargs = kwargs
 
     def run(self):
+        import mem
+        if not mem.thread_limit == None:
+            mem.thread_limit.acquire()
+
+        if mem.failed:
+            sys.exit(1)
+
         self.result = self.f(*(self.args), **(self.kwargs))
 
+        if not mem.thread_limit == None:
+            mem.thread_limit.release()
+
+    def join(self):
+        import mem
+
+        if mem.failed:
+            sys.exit(1)
+
+        Thread.join(self)
+
+        if mem.failed:
+            sys.exit(1)
