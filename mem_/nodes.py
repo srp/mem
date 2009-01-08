@@ -3,6 +3,7 @@ import mem
 import os
 import cPickle as pickle
 import types
+import sys
 
 import exceptions
 class NodeError(exceptions.Exception):
