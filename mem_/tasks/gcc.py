@@ -84,42 +84,59 @@ def t_prog(target, objs, CFLAGS, LIBS, LIBPATH):
         mem.fail()
     return File(target)
 
-def obj(source_list, env=None, build_dir = None,
+
+def build_obj(target, source, ext, env=None,
+              CFLAGS = None, CPPPATH = None, CXXFLAGS=None):
+    if ext == ".c":
+        t = mem.util.Runable(t_c_obj, target, source,
+                             env.get_override("CFLAGS", CFLAGS),
+                             env.get_override("CPPPATH", CPPPATH))
+        t.start()
+        return t
+
+    elif ext == ".cpp":
+        t = mem.util.Runable(t_cpp_obj, target, source,
+                             env.get_override("CXXFLAGS", CXXFLAGS),
+                             env.get_override("CPPPATH", CPPPATH))
+        t.start()
+        return t
+    else:
+        mem.fail("Don't know how to build %s" % source)
+
+    return t
+
+
+def obj(source_list, target=None, env=None, build_dir = None,
         CFLAGS = None, CPPPATH = None, CXXFLAGS=None):
     """ Take a list of sources and convert them to a correct object file """
-    if not type(source_list) == list:
-        source_list = [source_list]
 
-    nslist = mem.util.flatten(source_list)
     BuildDir = mem.util.get_build_dir(env, build_dir)
     threads = []
 
+    if not type(source_list) == list:
+        if target:
+            t = os.path.join(BuildDir, str(target))
+            thread = build_obj(t, source_list, env,
+                               CFLAGS, CPPPATH, CXXFLAGS)
+            thread.join()
+            return thread.result
+        else:
+            source_list = [source_list]
+
+    nslist = mem.util.flatten(source_list)
     for source in nslist:
         source = os.path.join(os.getcwd(), str(source))
+        target = os.path.join(BuildDir,  os.path.basename(source) + ".o")
         (name, ext) = os.path.splitext(str(source))
-        target = os.path.join(BuildDir, name + ".o")
-
-        if ext == ".c":
-            t = mem.util.Runable(t_c_obj, target, source,
-                                 env.get_override("CFLAGS", CFLAGS),
-                                 env.get_override("CPPPATH", CPPPATH))
-            t.start()
-
-        elif ext == ".cpp":
-            t = mem.util.Runable(t_cpp_obj, target, source,
-                                 env.get_override("CXXFLAGS", CXXFLAGS),
-                                 env.get_override("CPPPATH", CPPPATH))
-            t.start()
-        elif ext == ".h":
-            continue
-        else:
-            mem.fail("Don't know how to build %s" % source)
-        threads.append(t)
+        if not ext == ".h":
+            threads.append(build_obj(target, source, ext, env,
+                                     CFLAGS, CPPPATH, CXXFLAGS))
 
     for t in threads:
-        t.join()
+        if t:
+            t.join()
 
-    return [t.result for t in threads]
+    return [t.result for t in threads if t]
 
 def prog(target, objs, env=None, CFLAGS=[], LIBS=[], LIBPATH=[],
          build_dir = None):
