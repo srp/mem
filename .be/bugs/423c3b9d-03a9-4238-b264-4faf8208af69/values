@@ -1,0 +1,35 @@
+
+
+
+creator=Scott R. Parish <sparish@peak6.com>
+
+
+
+
+
+
+severity=minor
+
+
+
+
+
+
+status=open
+
+
+
+
+
+
+summary=pass along sys.stderr on popen calls
+
+
+
+
+
+
+time=Thu, 08 Jan 2009 23:15:49 +0000
+
+
+

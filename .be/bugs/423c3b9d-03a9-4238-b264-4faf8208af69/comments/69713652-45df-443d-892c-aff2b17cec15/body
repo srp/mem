@@ -1,0 +1,5 @@
+Currently popen calls (for running things like gcc or swig) don't
+specify stderr, so redirecting stderr doesn't redirect all the
+build output. Instead, we should be passing something like:
+   popen(..., stderr = sys.stderr)
+

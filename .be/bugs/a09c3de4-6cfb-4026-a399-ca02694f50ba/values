@@ -1,0 +1,35 @@
+
+
+
+creator=Scott R. Parish <sparish@peak6.com>
+
+
+
+
+
+
+severity=minor
+
+
+
+
+
+
+status=open
+
+
+
+
+
+
+summary=store()/restore() should correctly handle file metadata
+
+
+
+
+
+
+time=Thu, 08 Jan 2009 23:18:39 +0000
+
+
+

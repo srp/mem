@@ -1,0 +1,5 @@
+Presently restore() doesn't restore the file meta-data, so things like
+the execute or read-only flags don't get reset.
+
+This would probably be a good time to stop using git.
+
