@@ -1,0 +1,4 @@
+Dave came accross an interesting case where if his Memfile was missing
+the build() (or other method such as generate()), he got an extremely
+obtuse error message. mem should detect this situation and give a more
+obvious fail() message then the stack trace it currently gives.

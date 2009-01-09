@@ -1,0 +1,35 @@
+
+
+
+creator=Scott R. Parish <sparish@peak6.com>
+
+
+
+
+
+
+severity=minor
+
+
+
+
+
+
+status=open
+
+
+
+
+
+
+summary=give better error message if build function doesn't exist
+
+
+
+
+
+
+time=Fri, 09 Jan 2009 15:35:21 +0000
+
+
+
