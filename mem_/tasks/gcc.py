@@ -115,13 +115,18 @@ def obj(source_list, target=None, env=None, build_dir = None,
 
     if not type(source_list) == list:
         if target:
+            source = os.path.join(os.getcwd(), source_list)
+            (name, ext) = os.path.splitext(str(source))
             t = os.path.join(BuildDir, str(target))
-            thread = build_obj(t, source_list, env,
+            thread = build_obj(t, source, ext, env,
                                CFLAGS, CPPPATH, CXXFLAGS)
             thread.join()
-            return thread.result
+            return [thread.result]
         else:
             source_list = [source_list]
+
+    if target:
+        mem.fail("Cannot specify target on a list of objects")
 
     nslist = mem.util.flatten(source_list)
     for source in nslist:
