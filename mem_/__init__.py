@@ -70,25 +70,35 @@ class Mem(object):
             self.thread_limit = threading.Semaphore(threads)
 
     def import_memfile(self, f):
+        """this is mainly for the 'mem' script, don't call directly otherwise"""
         return util.import_module(f, f)
 
-    def build(self, subdir, *args, **kwargs):
-        memfunc = "build"
-        if kwargs.has_key("MEM_FUNC"):
-            memfunc = kwargs.pop("MEM_FUNC")
-        mf = self.import_memfile(os.path.join(subdir, "Memfile"))
-        d = os.path.abspath(os.curdir)
-        subdir = os.path.join(d, subdir)
-        os.chdir(subdir)
-        self.cwd = subdir
-        if memfunc not in mf.__dict__:
-            self.fail("requested method '%s()' doesn't exist in %s" %
-                      (memfunc, os.path.join(subdir, "Memfile")))
-        func = mf.__dict__[memfunc]
-        result = apply(func, args, kwargs)
-        os.chdir(d)
-        self.cwd = d
-        return result
+
+    class subdir(object):
+        """
+        Import's the Memfile in subdir and return a wrapper that
+        allows methods on it to be called.
+        """
+        def __init__(self, subdir, memfile="Memfile"):
+            self.orig_dir = os.path.abspath(os.curdir)
+            self.subdir = os.path.join(self.orig_dir, subdir)
+            self.memfile = os.path.join(subdir, memfile)
+            self.mf = util.import_module(self.memfile, self.memfile)
+
+        def __getattr__(self, memfunc):
+            def f(*args, **kwargs):
+                os.chdir(self.subdir)
+                self.cwd = self.subdir
+                if memfunc not in self.mf.__dict__:
+                    self.fail("requested method '%s()' doesn't exist in %s" %
+                              (memfunc,
+                               os.path.join(self.orig_dir, self.memfile)))
+                result = self.mf.__dict__[memfunc](*args, **kwargs)
+                os.chdir(self.orig_dir)
+                self.cwd = self.orig_dir
+                return result
+            return f
+
 
     def fail(self, msg=None):
         if self.failed:
