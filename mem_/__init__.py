@@ -82,7 +82,7 @@ class Mem(object):
         def __init__(self, subdir, memfile="Memfile"):
             self.orig_dir = os.path.abspath(os.curdir)
             self.subdir = os.path.join(self.orig_dir, subdir)
-            self.memfile = os.path.join(subdir, memfile)
+            self.memfile = os.path.join(self.subdir, memfile)
             self.mf = util.import_module(self.memfile, self.memfile)
 
         def __getattr__(self, memfunc):
