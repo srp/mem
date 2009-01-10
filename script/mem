@@ -21,6 +21,10 @@ if __name__ == '__main__':
     mem.__setup__()
 
     mfr_mod = mem.import_memfile("MemfileRoot")
-    mfr_mod.build()
+    try:
+        mfr_mod.build()
+    except KeyboardInterrupt:
+        print "-" * 50
+        print "build interrupted."
 
     mem.__shutdown__()
