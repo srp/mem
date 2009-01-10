@@ -3,6 +3,8 @@ import mem
 import os
 import cPickle as pickle
 import types
+import sha
+import shutil
 import sys
 
 import exceptions
@@ -38,6 +40,10 @@ class File(object):
     def _is_changed(self):
         return self.get_hash() != self.hash
 
+    def _store_path(self):
+        h = self.hash
+        return os.path.join(mem.blob_dir, h[:2], h[2:])
+
     def restore(self):
         if not os.path.exists(self.path):
             self._restore()
@@ -50,20 +56,41 @@ class File(object):
         if os.path.exists(self.path):
             os.unlink(self.path)
         with open(self.path, "wb") as f:
-            print "Restoring: " + self.path
-            mem.git.cat_file("blob", self.hash, stdout=f)
+            print "Restoring:", self.path
+            shutil.copy2(self._store_path(), self.path)
             return self
 
     def store(self):
-        mem.git.hash_object("-w", self.path)
+        spath = self._store_path()
+        mem.util.ensure_file_dir(spath)
+        if os.path.exists(self._store_path()):
+            return
+        shutil.copy2(self.path, spath)
 
     def get_hash(self):
         try:
             return File.hash_cache[self.path]
         except KeyError:
-            h = mem.git.hash_object(self.path).strip()
+            h = self._hash()
             File.hash_cache[self.path] = h
             return h
+
+    def _hash(self):
+        if not os.path.exists(self.path):
+            # if the file doesn't exist, hash to something unique
+            # so that cache lookup will fail
+            return "NOT FOUND"
+	f = open(self.path, "rb")
+        s = sha.sha()
+        st = os.stat(self.path)
+        s.update("blob %d %d\0" % (st[os.path.stat.ST_SIZE],
+                                   st[os.path.stat.ST_MODE]))
+        data = f.read(1<<16)
+        while data != '':
+            s.update(data) # 64k blocks
+            data = f.read(1<<16)
+        f.close()
+        return s.hexdigest()
 
     def __getstate__(self):
         """return the part of the state to pickle when acting as a result"""

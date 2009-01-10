@@ -1,5 +1,4 @@
 import cPickle as pickle
-import git_repo
 import imp
 import os
 import sha
@@ -12,9 +11,9 @@ import util
 import threading
 
 MEM_DIR = ".mem"
-GIT_DIR = "git-repo"
 DEPS_FILE = "deps"
 RESULT_FILE = "result"
+BLOB_DIR = "blob"
 
 class DepsStack(object):
     def __init__(self):
@@ -42,9 +41,10 @@ class Mem(object):
         if not os.path.exists(memdir):
             os.mkdir(memdir)
 
-        self.git = git_repo.GitRepo(os.path.join(memdir, GIT_DIR))
         self.taskcall_deps = shelve.open(os.path.join(memdir, DEPS_FILE))
         self.taskcall_result = shelve.open(os.path.join(memdir, RESULT_FILE))
+
+        self.blob_dir = os.path.join(memdir, BLOB_DIR)
 
         self.thread_limit = None
         self.local = threading.local()
@@ -158,9 +158,6 @@ class Mem(object):
 
                 deps = self.deps_stack().call_finish()
 
-                self.taskcall_deps[tchash] = deps
-                self.taskcall_result[self.get_hash(tchash, deps)] = result
-
                 def store(o):
                     if (hasattr(o, "store")):
                         o.store()
@@ -169,6 +166,9 @@ class Mem(object):
                             store(el)
 
                 store(result)
+
+                self.taskcall_deps[tchash] = deps
+                self.taskcall_result[self.get_hash(tchash, deps)] = result
 
                 return result
 
