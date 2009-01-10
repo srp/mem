@@ -81,6 +81,9 @@ class Mem(object):
         subdir = os.path.join(d, subdir)
         os.chdir(subdir)
         self.cwd = subdir
+        if memfunc not in mf.__dict__:
+            self.fail("requested method '%s()' doesn't exist in %s" %
+                      (memfunc, os.path.join(subdir, "Memfile")))
         func = mf.__dict__[memfunc]
         result = apply(func, args, kwargs)
         os.chdir(d)
