@@ -2,7 +2,6 @@ import cPickle as pickle
 import imp
 import os
 import sha
-import shelve
 import sys
 import types
 
@@ -11,8 +10,8 @@ import util
 import threading
 
 MEM_DIR = ".mem"
-DEPS_FILE = "deps"
-RESULT_FILE = "result"
+DEPS_DIR = "deps"
+RESULTS_DIR = "results"
 BLOB_DIR = "blob"
 
 class DepsStack(object):
@@ -41,9 +40,8 @@ class Mem(object):
         if not os.path.exists(memdir):
             os.mkdir(memdir)
 
-        self.taskcall_deps = shelve.open(os.path.join(memdir, DEPS_FILE))
-        self.taskcall_result = shelve.open(os.path.join(memdir, RESULT_FILE))
-
+        self.deps_dir = os.path.join(memdir, DEPS_DIR)
+        self.results_dir = os.path.join(memdir, RESULTS_DIR)
         self.blob_dir = os.path.join(memdir, BLOB_DIR)
 
         self.thread_limit = None
@@ -65,10 +63,6 @@ class Mem(object):
 
         self.tasks = mem_.tasks
         self.failed = False
-
-    def __shutdown__(self):
-        self.taskcall_deps.close()
-        self.taskcall_result.close()
 
     def concurrency(self, threads):
         if (threads > 0):
@@ -110,9 +104,6 @@ class Mem(object):
             for _ in range(tmp):
                 self.thread_limit.release()
 
-        self.taskcall_deps.close()
-        self.taskcall_result.close()
-
         sys.exit(1)
 
     def deps_stack(self):
@@ -145,6 +136,12 @@ class Mem(object):
                     return pickle.dumps(objs, 2)
         return sha.new(gh(o)).hexdigest()
 
+    def _deps_path(self, tchash):
+        return os.path.join(self.deps_dir, tchash[:2], tchash[2:])
+
+    def _results_path(self, rhash):
+        return os.path.join(self.results_dir, rhash[:2], rhash[2:])
+
     def memoize(self, taskf):
         def f(*args, **kwargs):
             tchash = self.get_hash(taskf.__name__, taskf.__module__,
@@ -167,14 +164,29 @@ class Mem(object):
 
                 store(result)
 
-                self.taskcall_deps[tchash] = deps
-                self.taskcall_result[self.get_hash(tchash, deps)] = result
+                fp = self._deps_path(tchash)
+                self.util.ensure_file_dir(fp)
+                f = open(fp, "wb")
+                pickle.dump(deps, f)
+                f.close()
+
+                fp = self._results_path(self.get_hash(tchash, deps))
+                self.util.ensure_file_dir(fp)
+                f = open(fp, "wb")
+                pickle.dump(result, f)
+                f.close()
 
                 return result
 
             try:
-                deps = self.taskcall_deps[tchash]
-                result = self.taskcall_result[self.get_hash(tchash, deps)]
+
+                f = open(self._deps_path(tchash), "rb")
+                deps = pickle.load(f)
+                f.close()
+
+                f = open(self._results_path(self.get_hash(tchash, deps)), "rb")
+                result = pickle.load(f)
+                f.close()
 
                 def restore(o):
                     if (hasattr(o, "restore")):
@@ -186,7 +198,7 @@ class Mem(object):
                 restore(result)
 
                 return result
-            except KeyError:
+            except IOError:
                 return run()
 
         return f

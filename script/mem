@@ -26,5 +26,3 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print "-" * 50
         print "build interrupted."
-
-    mem.__shutdown__()
