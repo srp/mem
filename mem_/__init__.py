@@ -1,4 +1,5 @@
 import cPickle as pickle
+from cpu_count import cpu_count
 import imp
 import os
 import sha
@@ -44,7 +45,7 @@ class Mem(object):
         self.results_dir = os.path.join(memdir, RESULTS_DIR)
         self.blob_dir = os.path.join(memdir, BLOB_DIR)
 
-        self.thread_limit = None
+        self.thread_limit = threading.Semaphore(cpu_count() * 2)
         self.local = threading.local()
 
     def __setup__(self):
