@@ -146,40 +146,7 @@ class Mem(object):
         def f(*args, **kwargs):
             tchash = self.get_hash(taskf.__name__, taskf.__module__,
                                    args, kwargs)
-
-            def run():
-                self.deps_stack().call_start()
-                result = taskf(*args, **kwargs)
-                if self.failed:
-                    sys.exit(1)
-
-                deps = self.deps_stack().call_finish()
-
-                def store(o):
-                    if (hasattr(o, "store")):
-                        o.store()
-                    elif (hasattr(o, "__iter__")):
-                        for el in o:
-                            store(el)
-
-                store(result)
-
-                fp = self._deps_path(tchash)
-                self.util.ensure_file_dir(fp)
-                f = open(fp, "wb")
-                pickle.dump(deps, f)
-                f.close()
-
-                fp = self._results_path(self.get_hash(tchash, deps))
-                self.util.ensure_file_dir(fp)
-                f = open(fp, "wb")
-                pickle.dump(result, f)
-                f.close()
-
-                return result
-
             try:
-
                 f = open(self._deps_path(tchash), "rb")
                 deps = pickle.load(f)
                 f.close()
@@ -199,6 +166,38 @@ class Mem(object):
 
                 return result
             except IOError:
-                return run()
+                return self._run_task(taskf, args, kwargs, tchash)
 
         return f
+
+    def _run_task(self, taskf, args, kwargs, tchash):
+        self.deps_stack().call_start()
+        result = taskf(*args, **kwargs)
+        if self.failed:
+            sys.exit(1)
+
+        deps = self.deps_stack().call_finish()
+
+        def store(o):
+            if (hasattr(o, "store")):
+                o.store()
+            elif (hasattr(o, "__iter__")):
+                for el in o:
+                    store(el)
+
+        store(result)
+
+        fp = self._deps_path(tchash)
+        self.util.ensure_file_dir(fp)
+        f = open(fp, "wb")
+        pickle.dump(deps, f)
+        f.close()
+
+        fp = self._results_path(self.get_hash(tchash, deps))
+        self.util.ensure_file_dir(fp)
+        f = open(fp, "wb")
+        pickle.dump(result, f)
+        f.close()
+
+        return result
+
