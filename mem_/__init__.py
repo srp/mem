@@ -74,30 +74,33 @@ class Mem(object):
         return util.import_module(f, f)
 
 
-    class subdir(object):
-        """
-        Import's the Memfile in subdir and return a wrapper that
-        allows methods on it to be called.
-        """
-        def __init__(self, subdir, memfile="Memfile"):
-            self.orig_dir = os.path.abspath(os.curdir)
-            self.subdir = os.path.join(self.orig_dir, subdir)
-            self.memfile = os.path.join(self.subdir, memfile)
-            self.mf = util.import_module(self.memfile, self.memfile)
+    def subdir(self, *args, **kwargs):
+        class Subdir(object):
+            """
+            Import's the Memfile in subdir and return a wrapper that
+            allows methods on it to be called.
+            """
+            def __init__(self, mem, subdir, memfile="Memfile"):
+                self.mem = mem
+                self.orig_dir = os.path.abspath(os.curdir)
+                self.subdir = os.path.join(self.orig_dir, subdir)
+                self.memfile = os.path.join(self.subdir, memfile)
+                self.mf = util.import_module(self.memfile, self.memfile)
 
-        def __getattr__(self, memfunc):
-            def f(*args, **kwargs):
-                os.chdir(self.subdir)
-                self.cwd = self.subdir
-                if memfunc not in self.mf.__dict__:
-                    self.fail("requested method '%s()' doesn't exist in %s" %
-                              (memfunc,
-                               os.path.join(self.orig_dir, self.memfile)))
-                result = self.mf.__dict__[memfunc](*args, **kwargs)
-                os.chdir(self.orig_dir)
-                self.cwd = self.orig_dir
-                return result
-            return f
+            def __getattr__(self, memfunc):
+                def f(*args, **kwargs):
+                    os.chdir(self.subdir)
+                    self.mem.cwd = self.subdir
+                    if memfunc not in self.mf.__dict__:
+                        self.fail("requested method '%s()' doesn't exist in %s" %
+                                  (memfunc,
+                                   os.path.join(self.orig_dir, self.memfile)))
+                    result = self.mf.__dict__[memfunc](*args, **kwargs)
+                    os.chdir(self.orig_dir)
+                    self.mem.cwd = self.orig_dir
+                    return result
+                return f
+        return Subdir(self, *args, **kwargs)
 
 
     def fail(self, msg=None):
