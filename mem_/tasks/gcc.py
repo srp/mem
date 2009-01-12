@@ -130,9 +130,10 @@ def obj(source_list, target=None, env=None, build_dir = None,
 
     nslist = mem.util.flatten(source_list)
     for source in nslist:
-        source = os.path.join(os.getcwd(), str(source))
         (name, ext) = os.path.splitext(str(source))
-        target = os.path.join(BuildDir,  os.path.basename(name) + ".o")
+        target = os.path.join(BuildDir,  name + ".o")
+
+        source = os.path.join(os.getcwd(), str(source))
         if not ext == ".h":
             threads.append(build_obj(target, source, ext, env,
                                      CFLAGS, CPPPATH, CXXFLAGS))
