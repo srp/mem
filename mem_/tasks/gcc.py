@@ -117,6 +117,8 @@ def obj(source_list, target=None, env=None, build_dir = None,
         if target:
             source = os.path.join(os.getcwd(), source_list)
             (name, ext) = os.path.splitext(str(source))
+            if name.startswith(os.getcwd()):
+                name = name[:len(os.getcwd()) + 1]
             t = os.path.join(BuildDir, str(target))
             thread = build_obj(t, source, ext, env,
                                CFLAGS, CPPPATH, CXXFLAGS)
