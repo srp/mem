@@ -14,6 +14,7 @@ def find_root():
     return d
 
 if __name__ == '__main__':
+    sys.path.append("./")
     root = find_root()
     os.chdir(root)
     sys.modules.setdefault('mem', mem_.Mem(root))
