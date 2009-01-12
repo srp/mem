@@ -131,9 +131,7 @@ def ensure_dir(path):
 def import_module(name, fname=None):
     if not fname:
         fname = name + ".py"
-
-    sys.path.append("./")
-    m = imp.new_module(name)
+    m = imp.new_module(os.path.basename(name))
     m.__file__ = fname
     execfile(fname, m.__dict__, m.__dict__)
     return m
