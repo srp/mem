@@ -8,14 +8,14 @@ Mem: a build system not pulled from the cache of build system convention
 Why a new build system?
 -----------------------
 
-There are no shortage of build systems, what justifies the existance
+There are no shortage of build systems, what justifies the existence
 of yet another one?
 
 Mem is a completely different approach to build systems, one base on
 function memoization. Most build systems are based on building up some
 static graph of dependencies and then traversing that graph while
-minimally rebuilding, propogating changed objects across the graph for
-calculating futher steps; usually with very special languages and
+minimally rebuilding, propagating changed objects across the graph for
+calculating further  steps; usually with very special languages and
 sophisticated layers for automatically building the graph, easing
 the job of the end user in describing their build.
 
@@ -54,7 +54,7 @@ the calculation of results for previously-processed inputs.
 ________________________________________________________________________
 
 A classic example of memoization is to allow writing a Fibonacci function
-using the mathematical definition, eg:
+using the mathematical definition, e.g.:
 
 ------------------------------------------------------------------------
          / 0 if n = 0
@@ -80,8 +80,8 @@ The problem with this recursive definition is that 'fib(n-1)' and
 computational steps, so we're wasting a huge (exponential) amount of
 time recomputing the same thing over and over.
 
-One solution is find a way to refactor the equation so that we can
-compute values in a more linear fassion (such as via
+One solution is find a way to re-factor the equation so that we can
+compute values in a more linear fashion (such as via
 iteration). Sometimes this isn't desirable or possible.
 
 Memoization is a different solution. Rather then rewriting the
@@ -102,7 +102,7 @@ def fib(n, cache={}):
         return cache[n]
 source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We could abstract the caching so that it doesn't polute our business
+We could abstract the caching so that it doesn't pollute our business
 logic and so that we can reuse it:
 
 [python]
@@ -152,7 +152,7 @@ memoized based build. The core of which is obviously memoization. Mem
 actually provides a 'memoize' function, very similar to the one we
 developed in the previous section. The difference is mainly that mem's
 memoization has to persist across build invocations, and it has to be
-able to account for external data (eg files).
+able to account for external data (e.g. files).
 
 We already have enough information to write a simple build task for
 creating an object from a '.c' file:
@@ -245,7 +245,7 @@ def obj(target, source, env={}):
     mem.add_dep(mem.nodes.File(source)) # declare external dependency
     cflags = env.get("CFLAGS", [])
     args = ["gcc", "-o", target, source] + cflags
-    print args                          # let the user know what's happending
+    print args                          # let the user know what's happening
     subprocess.Popen(args, stdin = PIPE, stdout = PIPE)
     return mem.nodes.File(target)
 source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -293,7 +293,7 @@ The 'Env' class
 Mem does provide an 'mem.util.Env' class that extends the base 'dict'
 class. It's not very exciting; it mainly provides:
 
-* Access using attributes: eg 'env.CFLAGS' is the same as
+* Access using attributes: e.g. 'env.CFLAGS' is the same as
   'env["CFLAGS"]'
 
 * 'subst()' method which allows for string expansion using the
@@ -311,7 +311,7 @@ Memfiles
 Startup
 ~~~~~~~
 
-When git is ran, it initializes itself, searches down the directory
+When mem is ran, it initializes itself, searches down the directory
 tree (towards the root) for the first directory with a 'MemfileRoot'
 in it, it imports this file, and then runs the 'build()' function from
 it, which should take no arguments.
@@ -330,8 +330,8 @@ returns a wrapped module such that anytime you call a function on it:
 * restores env.cwd and the process's cwd
 
 The intent behind changing the directory is to make things like
-http://docs.python.org/library/glob.html#glob.glob[glob.glob()] more
-convient for the user writing the script.
+http://docs.python.org/library/glob.html#glob.glob more
+convenient for the user writing the script.
 
 .Build functions and CWD
 ************************************************************************
@@ -393,8 +393,8 @@ writing a new build function:
 ************************************************************************
 When we said that "Mem leaves the full programming language in-tact",
 there's no better way to illustrate this then exceptions. You can
-raise and catch exceptions just like you normally would in mem. This
-can be very useful, for example you might still want to run your
+raise and catch exceptions just like you normally would in python. This
+can be very useful, for example, you might still want to run your
 documentation generation and cscopes indexer even if the rest of the
 build fails.
 ************************************************************************
