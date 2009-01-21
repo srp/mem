@@ -22,7 +22,7 @@ PEAK6 CONFIDENTIAL
 Abstract
 --------
 
-Problems can be very difficult or trival depending on the approach and
+Problems can be very difficult or trivial depending on the approach and
 algorithms used to solve them. In this document we'll go through the
 thought process of creating a build system out of the memoization of
 function calls. I believe this approach will best lead to an
@@ -54,7 +54,7 @@ Properties needed for build
 ---------------------------
 
 {2}[SCons] and similar build systems have already
-demonstraighted that builds could be composed using function or method
+demonstrated that builds could be composed using function or method
 evaluation. Obviously to use memoization, we'll have to find a way to
 make these pure, or effectively pure. When viewed from linguistically,
 build steps are not pure as they involve mutations on the file
@@ -63,7 +63,7 @@ build step, then we can consider it to be pure as long as we can
 include such in the memoization process.
 
 Additionally, we're memoizing across multiple process invocations,
-we'll also have to find a way to consistantly and durably hash and
+we'll also have to find a way to consistently and durably hash and
 cache.
 
 Memoization for a build system
@@ -210,10 +210,10 @@ basically backs a dict() with a file using {pickle}[pickle])
 A File class
 ~~~~~~~~~~~~
 
-The algorithm developped prior assumed that the dependencies were some
+The algorithm developed prior assumed that the dependencies were some
 kind of object that supported a hash() method, and that the results
-were some kind of an object that support a store() and restore(),
-method. Lets look at what a basic File class might look like to
+were some kind of objects that support a store() and restore(),
+method. Let's look at what a basic File class might look like to
 support both of these. As a simple way of caching large files, we'll
 use a git repo.
 
@@ -242,7 +242,7 @@ source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           git.cat_file("blob", self.git_hash, stdout=open(self.path, "wb"))
 source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The reason we impliment both of these in the same class is that
+The reason we implement both of these in the same class is that
 results from one build function often end up being dependencies of
 another, consider:
 
