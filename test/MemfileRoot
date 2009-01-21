@@ -27,8 +27,7 @@ def build():
 
     setup_paths(env)
 
-
-    goodbye_o = mem.build("goodbye", env)
+    goodbye_o = mem.subdir("goodbye").build(env)
     env.c.prog("hello",
                objs = [env.c.obj(["main.c", "hello.c"], env=env),
                        goodbye_o],
