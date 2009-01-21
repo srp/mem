@@ -135,9 +135,3 @@ class Env(dict):
 
     def subst(self, value):
         return value % self
-
-    def get_override(self, key, default=None):
-        if default:
-            return default
-        else:
-            return self[key]

@@ -34,6 +34,7 @@ def asciidoc(source, build_dir=None, env=None, ASCIIDOC_FLAGS=[]):
         (name, ext) = os.path.splitext(str(src))
         target = os.path.join(BuildDir, name + ".html")
 
-        out.append(t_asciidoc(target, src, env=env))
+        out.append(t_asciidoc(target, src,
+                              env=env, ASCIIDOC_FLAGS=ASCIIDOC_FLAGS))
 
     return out

@@ -85,19 +85,14 @@ def t_prog(target, objs, CFLAGS, LIBS, LIBPATH):
     return File(target)
 
 
-def build_obj(target, source, ext, env=None,
-              CFLAGS = None, CPPPATH = None, CXXFLAGS=None):
+def build_obj(target, source, ext, env=None, **kwargs):
     if ext == ".c":
-        t = mem.util.Runable(t_c_obj, target, source,
-                             env.get_override("CFLAGS", CFLAGS),
-                             env.get_override("CPPPATH", CPPPATH))
+        t = mem.util.Runable(t_c_obj, target, source, env=env, **kwargs)
         t.start()
         return t
 
     elif ext == ".cpp":
-        t = mem.util.Runable(t_cpp_obj, target, source,
-                             env.get_override("CXXFLAGS", CXXFLAGS),
-                             env.get_override("CPPPATH", CPPPATH))
+        t = mem.util.Runable(t_cpp_obj, target, source, env=env, **kwargs)
         t.start()
         return t
     else:
@@ -106,8 +101,7 @@ def build_obj(target, source, ext, env=None,
     return t
 
 
-def obj(source_list, target=None, env=None, build_dir = None,
-        CFLAGS = None, CPPPATH = None, CXXFLAGS=None):
+def obj(source_list, target=None, env=None, build_dir=None, **kwargs):
     """ Take a list of sources and convert them to a correct object file """
 
     BuildDir = mem.util.get_build_dir(env, build_dir)
@@ -120,8 +114,7 @@ def obj(source_list, target=None, env=None, build_dir = None,
             if name.startswith(os.getcwd()):
                 name = name[:len(os.getcwd()) + 1]
             t = os.path.join(BuildDir, str(target))
-            thread = build_obj(t, source, ext, env,
-                               CFLAGS, CPPPATH, CXXFLAGS)
+            thread = build_obj(t, source, ext, env, **kwargs)
             thread.join()
             return [thread.result]
         else:
@@ -137,8 +130,7 @@ def obj(source_list, target=None, env=None, build_dir = None,
 
         source = os.path.join(os.getcwd(), str(source))
         if not ext == ".h":
-            threads.append(build_obj(target, source, ext, env,
-                                     CFLAGS, CPPPATH, CXXFLAGS))
+            threads.append(build_obj(target, source, ext, env, **kwargs))
 
     for t in threads:
         if t:
@@ -146,13 +138,10 @@ def obj(source_list, target=None, env=None, build_dir = None,
 
     return [t.result for t in threads if t]
 
-def prog(target, objs, env=None, CFLAGS=[], LIBS=[], LIBPATH=[],
-         build_dir = None):
+def prog(target, objs, env=None, build_dir = None, **kwargs):
     """ Convert the list of objects into a program given the cflags """
     nobjs = mem.util.flatten(objs)
     BuildDir = mem.util.get_build_dir(env, build_dir)
     ntarget = os.path.join(BuildDir, target)
-    t_prog(ntarget, nobjs, env.get_override("CFLAGS", CFLAGS),
-           env.get_override("LIBS", LIBS),
-           env.get_override("LIBPATH", LIBPATH))
+    t_prog(ntarget, nobjs, env=env, **kwargs)
     return File(ntarget)

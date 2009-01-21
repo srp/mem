@@ -19,7 +19,7 @@ def make_depends(source, SWIGFLAGS):
     deps = deps[1:] # first element is the target (eg ".c"), drop it
     return [dep for dep in deps if dep != '\\']
 
-def find_produces(c, target, source, SWIGFLAGS, CFLAGS, CPPPATH):
+def find_produces(target, source, SWIGFLAGS):
     ret = []
     src_data = open(str(source)).read()
     output = re_module.findall(src_data)
@@ -45,13 +45,13 @@ def find_produces(c, target, source, SWIGFLAGS, CFLAGS, CPPPATH):
     return ret
 
 
-@mem.util.with_env(SWIGFLAGS=[], CFLAGS=[], CPPPATH=[], c=None)
+@mem.util.with_env(SWIGFLAGS=[])
 @mem.memoize
-def to_c(target, source, SWIGFLAGS, CFLAGS, CPPPATH, c):
+def to_c(target, source, SWIGFLAGS):
     mem.add_dep(mem.util.convert_to_file(source))
     mem.add_deps([mem.nodes.File(f) for f in make_depends(source, SWIGFLAGS)])
 
-    targets = find_produces(c, target, source, SWIGFLAGS, CFLAGS, CPPPATH)
+    targets = find_produces(target, source, SWIGFLAGS)
     targets.append(target)
     args = mem.util.convert_cmd(['swig',
                                  '-o',
@@ -70,31 +70,23 @@ def to_c(target, source, SWIGFLAGS, CFLAGS, CPPPATH, c):
     return [mem.nodes.File(f) for f in targets]
 
 
-
-
-def obj(sources, env=None, build_dir = None, c=None,
-        SWIGFLAGS=None, CFLAGS=None, CPPPATH=None):
+def obj(sources, env=None, build_dir=None, **kwargs):
     if not type(sources) == list:
         sources = [sources]
+
+    env = env.copy()
+    env.update(kwargs)
 
     nslist = mem.util.flatten(sources)
     BuildDir = mem.util.get_build_dir(env, build_dir)
     nslist = mem.util.flatten(sources)
 
-    cflags = env.get_override("CFLAGS", CFLAGS)
-
-    c = env.get_override("c", c)
     targets = []
     threads = []
     for source in nslist:
         (name, ignore) = os.path.splitext(str(source))
         target = os.path.join(BuildDir, name + "_wrap.c")
-        t = mem.util.Runable(
-            to_c, target, source,
-            env.get_override("SWIGFLAGS", SWIGFLAGS),
-            env.get_override("SWIG_CFLAGS", cflags),
-            env.get_override("CPPPATH", CPPPATH),
-            c)
+        t = mem.util.Runable(to_c, target, source, env=env)
         t.start()
         threads.append(t)
 
@@ -109,7 +101,8 @@ def obj(sources, env=None, build_dir = None, c=None,
             ctargets.append(target)
         else:
             ntargets.append(target)
-    ntargets.extend(env.c.obj(ctargets, env=env, CFLAGS=cflags))
+
+    ntargets.extend(env.c.obj(ctargets, env=env, CFLAGS=env.SWIG_CFLAGS))
 
 
     return mem.util.convert_to_files(mem.util.flatten(ntargets))
