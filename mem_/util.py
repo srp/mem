@@ -113,6 +113,7 @@ def with_env(**kwargs):
                         else:
                             fkwargs[k] = kwargs[k]
             return f(*args, **fkwargs)
+        new_f.__module__ = f.__module__
         return new_f
     return decorator
 

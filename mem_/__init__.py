@@ -19,11 +19,14 @@ class DepsStack(object):
     def __init__(self):
         self.deps = []
 
-    def call_start(self):
-        self.deps.append([])
+    def call_start(self, mem, f):
+        deps = [mem.nodes.File(sys.modules[f.__module__].__file__)]
+
+        self.deps.append(deps)
 
     def call_finish(self):
-        return self.deps.pop()
+        deps = self.deps.pop()
+        return deps
 
     def add_dep(self, d):
         self.deps[-1].append(d)
@@ -187,10 +190,11 @@ class Mem(object):
             except IOError:
                 return self._run_task(taskf, args, kwargs, tchash)
 
+        f.__module__ = taskf.__module__
         return f
 
     def _run_task(self, taskf, args, kwargs, tchash):
-        self.deps_stack().call_start()
+        self.deps_stack().call_start(self, taskf)
         result = taskf(*args, **kwargs)
         if self.failed:
             sys.exit(1)
