@@ -58,12 +58,11 @@ class Mem(object):
         import mem_.util
         self.util = mem_.util
 
-        import mem_.tasks.gcc
-        import mem_.tasks.swig
-        import mem_.tasks.ar
-        import mem_.tasks.asciidoc
-        import mem_.tasks.command
-        import mem_.tasks.fs
+        mem_dir = os.path.dirname(sys.modules[self.__module__].__file__)
+        for f in os.listdir(os.path.join(mem_dir, "tasks")):
+            if not f.endswith(".py"):
+                continue
+            __import__("mem_.tasks." + f[:-2])
 
         self.tasks = mem_.tasks
         self.failed = False
