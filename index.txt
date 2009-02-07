@@ -1,4 +1,6 @@
-image:mem.png[] build by memoization.
+:pagetitle:mem: build by memoization.
+
+image:mem.png[]: build by memoization.
 ======================================
 
 
