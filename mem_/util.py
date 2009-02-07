@@ -33,6 +33,9 @@ def get_build_dir(env, arg_func):
     elif arg_func:
         return arg_func(env)
 
+    if not env:
+        return mem.cwd
+
     try:
         func = env.BUILD_DIR_FUNC
 
@@ -128,7 +131,7 @@ def with_env(**kwargs):
                 fenv = fkwargs.pop("env")
                 for k in kwargs.keys():
                     if not fkwargs.has_key(k) or not fkwargs[k]:
-                        if fenv.has_key(k):
+                        if fenv and fenv.has_key(k):
                             fkwargs[k] = fenv[k]
                         else:
                             fkwargs[k] = kwargs[k]
