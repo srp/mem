@@ -1,0 +1,42 @@
+:pagetitle:mem: getting started.
+
+image:mem.png[mem]: getting started.
+====================================
+
+include::nav.inc[]
+
+Using mem with existing functions
+---------------------------------
+
+While its easy to add new kinds of new memoized build functions, lets
+start with some examples of using mem with the functions that it come
+with.
+
+Hello, World
+~~~~~~~~~~~~
+
+In a new directory, create the following files:
+
+.hello.c
+[c]
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#include <stdio.h>
+
+int
+main(int argc, char **argv)
+{
+	printf("Hello, World\n");
+	return 0;
+}
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.MemfileRoot
+[python]
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+import mem
+
+def build():
+    hello_o = mem.tasks.gcc.obj("hello.c")
+    mem.tasks.gcc.prog("hello", hello_o)
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+

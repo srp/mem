@@ -324,13 +324,13 @@ div.olist2 div.olist ol {
   list-style-type: decimal;
 }
 </style>
-<title>mem: about.</title>
+<title>mem: documentation.</title>
 </head>
 <body>
 <div id="header">
 <h1><span class="image">
 <img src="mem.png" alt="mem" title="mem" />
-</span>: about.</h1>
+</span>: documentation.</h1>
 </div>
 <div id="preamble">
 <div class="sectionbody">
@@ -340,58 +340,23 @@ div.olist2 div.olist ol {
   <a href="http://groups.google.com/group/mem-users">Mailing list</a> |
   <a href="documentation.html">Documentation</a>
 ]</p></div>
-</div>
-</div>
-<h2>Why a new build system?</h2>
-<div class="sectionbody">
-<div class="para"><p>There are no shortage of build systems, what justifies the existence
-of yet another one?</p></div>
-<div class="para"><p>Mem is a completely different approach to build systems, one base on
-function memoization. Most build systems are based on building up some
-static graph of dependencies and targets, traversing that graph while
-minimally rebuilding, propagating changed objects across the graph for
-calculating further steps; usually with very special languages and
-sophisticated layers for automatically building the graph, easing
-the job of the end user in describing their build.</p></div>
-<div class="para"><p>Practically, mem is different in that:</p></div>
 <div class="ilist"><ul>
 <li>
 <p>
-the build is simply a script where certain functions are memoized (cached)
+<a href="about.html">About</a>
 </p>
 </li>
 <li>
 <p>
-these memoized functions are only rebuilt if one of their inputs changes
+<a href="getting-started.html">Getting started</a>
 </p>
 </li>
 </ul></div>
-<div class="para"><p>The first part means that you can script your build however is most
-natural to solve your specific build requirements, and mem sits in the
-background and caches and avoids duplicate evaluations (eg needless
-rebuilding).</p></div>
-<div class="para"><p>The second part means exactly what it says. This can be startling at
-first. For instance, suppose you had a <em>.c</em> file, and a build step to
-compile it into an object and a build step to link that into a
-program. If you make a whitespace change to that <em>.c</em> file, such as
-changing a comment; the resulting object will likely be identical
-(sha1) as the object before this change was made. Given that mem only
-builds when things are changed, no relinking will be done as the
-object to link will be unchanged!</p></div>
 </div>
-<h2>System Requirements</h2>
-<div class="sectionbody">
-<div class="para"><p>Mem requires Python 2.5 or greater.</p></div>
-</div>
-<h2>Attribution</h2>
-<div class="sectionbody">
-<div class="para"><p>Mem has shamelessly pulled ideas from, in no particular order:
-<a href="http://git-scm.com/">git</a>, <a href="http://ccache.samba.org/">ccache</a>,
-<a href="http://scons.org/">scons</a>, <a href="http://code.google.com/p/waf/">waf</a>.</p></div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 10-Feb-2009 20:55:18 CDT
+Last updated 10-Feb-2009 20:55:21 CDT
 </div>
 </div>
 </body>

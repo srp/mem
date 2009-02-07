@@ -324,13 +324,13 @@ div.olist2 div.olist ol {
   list-style-type: decimal;
 }
 </style>
-<title>mem: about.</title>
+<title>mem: getting started.</title>
 </head>
 <body>
 <div id="header">
 <h1><span class="image">
 <img src="mem.png" alt="mem" title="mem" />
-</span>: about.</h1>
+</span>: getting started.</h1>
 </div>
 <div id="preamble">
 <div class="sectionbody">
@@ -342,56 +342,44 @@ div.olist2 div.olist ol {
 ]</p></div>
 </div>
 </div>
-<h2>Why a new build system?</h2>
+<h2>Using mem with existing functions</h2>
 <div class="sectionbody">
-<div class="para"><p>There are no shortage of build systems, what justifies the existence
-of yet another one?</p></div>
-<div class="para"><p>Mem is a completely different approach to build systems, one base on
-function memoization. Most build systems are based on building up some
-static graph of dependencies and targets, traversing that graph while
-minimally rebuilding, propagating changed objects across the graph for
-calculating further steps; usually with very special languages and
-sophisticated layers for automatically building the graph, easing
-the job of the end user in describing their build.</p></div>
-<div class="para"><p>Practically, mem is different in that:</p></div>
-<div class="ilist"><ul>
-<li>
-<p>
-the build is simply a script where certain functions are memoized (cached)
-</p>
-</li>
-<li>
-<p>
-these memoized functions are only rebuilt if one of their inputs changes
-</p>
-</li>
-</ul></div>
-<div class="para"><p>The first part means that you can script your build however is most
-natural to solve your specific build requirements, and mem sits in the
-background and caches and avoids duplicate evaluations (eg needless
-rebuilding).</p></div>
-<div class="para"><p>The second part means exactly what it says. This can be startling at
-first. For instance, suppose you had a <em>.c</em> file, and a build step to
-compile it into an object and a build step to link that into a
-program. If you make a whitespace change to that <em>.c</em> file, such as
-changing a comment; the resulting object will likely be identical
-(sha1) as the object before this change was made. Given that mem only
-builds when things are changed, no relinking will be done as the
-object to link will be unchanged!</p></div>
-</div>
-<h2>System Requirements</h2>
-<div class="sectionbody">
-<div class="para"><p>Mem requires Python 2.5 or greater.</p></div>
-</div>
-<h2>Attribution</h2>
-<div class="sectionbody">
-<div class="para"><p>Mem has shamelessly pulled ideas from, in no particular order:
-<a href="http://git-scm.com/">git</a>, <a href="http://ccache.samba.org/">ccache</a>,
-<a href="http://scons.org/">scons</a>, <a href="http://code.google.com/p/waf/">waf</a>.</p></div>
+<div class="para"><p>While its easy to add new kinds of new memoized build functions, lets
+start with some examples of using mem with the functions that it come
+with.</p></div>
+<h3>Hello, World</h3><div style="clear:left"></div>
+<div class="para"><p>In a new directory, create the following files:</p></div>
+<div class="listingblock">
+<div class="title">Example: hello.c</div>
+<div class="content"><!-- Generator: GNU source-highlight 2.11
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #000080">#include</span></span> <span style="color: #FF0000">&lt;stdio.h&gt;</span>
+
+<span style="color: #009900">int</span>
+<span style="font-weight: bold"><span style="color: #000000">main</span></span><span style="color: #990000">(</span><span style="color: #009900">int</span> argc<span style="color: #990000">,</span> <span style="color: #009900">char</span> <span style="color: #990000">**</span>argv<span style="color: #990000">)</span>
+<span style="color: #FF0000">{</span>
+        <span style="font-weight: bold"><span style="color: #000000">printf</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"Hello, World</span><span style="color: #CC33CC">\n</span><span style="color: #FF0000">"</span><span style="color: #990000">);</span>
+        <span style="font-weight: bold"><span style="color: #0000FF">return</span></span> <span style="color: #993399">0</span><span style="color: #990000">;</span>
+<span style="color: #FF0000">}</span>
+</tt></pre></div></div>
+<div class="listingblock">
+<div class="title">Example: MemfileRoot</div>
+<div class="content"><!-- Generator: GNU source-highlight 2.11
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-weight: bold"><span style="color: #000080">import</span></span> mem
+
+<span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">build</span></span><span style="color: #990000">():</span>
+    hello_o <span style="color: #990000">=</span> mem<span style="color: #990000">.</span>tasks<span style="color: #990000">.</span>gcc<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">obj</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"hello.c"</span><span style="color: #990000">)</span>
+    mem<span style="color: #990000">.</span>tasks<span style="color: #990000">.</span>gcc<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">prog</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"hello"</span><span style="color: #990000">,</span> hello_o<span style="color: #990000">)</span>
+</tt></pre></div></div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 10-Feb-2009 20:55:18 CDT
+Last updated 10-Feb-2009 20:55:23 CDT
 </div>
 </div>
 </body>
