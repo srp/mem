@@ -1,0 +1,9 @@
+import glob
+import mem
+
+def build():
+    env = mem.nodes.Env(ASCIIDOC_FLAGS = ["--unsafe",
+                                          "-a stylesdir=$PWD/stylesheets"],
+                        BUILD_DIR = ".")
+
+    mem.tasks.asciidoc.asciidoc(glob.glob("*.txt"), env=env)

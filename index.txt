@@ -1,0 +1,12 @@
+image:mem.png[] build by memoization.
+======================================
+
+
+**********************************
+Simple. Fast. Natural. Pick three.
+**********************************
+
+
+* http://srp.github.com/mem[Home]
+* http://github.com/srp/mem/tree/master[Source]
+* http://groups.google.com/group/mem-users[Mailing list]
