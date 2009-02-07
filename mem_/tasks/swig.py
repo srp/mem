@@ -75,13 +75,17 @@ def obj(sources, env=None, build_dir=None, **kwargs):
 
     ntargets = []
     ctargets = []
+    jtargets = []
     for target in mem.util.flatten(targets):
         if str(target).endswith(".c"):
             ctargets.append(target)
+        elif str(target).endswith(".java"):
+            jtargets.append(target)
         else:
             ntargets.append(target)
 
     ntargets.extend(env.c.obj(ctargets, env=env, CFLAGS=env.SWIG_CFLAGS))
+    jtargets.extend(env.java(jtargets, env=env,
+                             JAVA_FLAGS=env.get("SWIG_JAVA_FLAGS", [])))
 
-
-    return mem.util.convert_to_files(mem.util.flatten(ntargets))
+    return mem.util.convert_to_files(mem.util.flatten(ntargets + jtargets))
