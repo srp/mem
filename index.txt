@@ -3,12 +3,19 @@
 image:mem.png[mem]: build by memoization.
 =========================================
 
+[
+  http://srp.github.com/mem[Home] |
+  http://github.com/srp/mem/tree/master[Source] |
+  http://groups.google.com/group/mem-users[Mailing list]
+]
 
 ***********************************
 Simple. Fast. Flexible. Pick three.
 ***********************************
 
+Picking the right approach to solving a problem is key in the ease and
+effectiveness of the solution. Mem takes a new approach towards building:
+http://en.wikipedia.org/wiki/Memoization[memoization]. Script your
+build how you like, annotate your expensive leaf calls and mem will
+make sure that they are only reevaluated when the inputs change.
 
-* http://srp.github.com/mem[Home]
-* http://github.com/srp/mem/tree/master[Source]
-* http://groups.google.com/group/mem-users[Mailing list]
