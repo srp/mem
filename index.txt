@@ -1,12 +1,12 @@
 :pagetitle:mem: build by memoization.
 
-image:mem.png[]: build by memoization.
-======================================
+image:mem.png[mem]: build by memoization.
+=========================================
 
 
-**********************************
-Simple. Fast. Natural. Pick three.
-**********************************
+***********************************
+Simple. Fast. Flexible. Pick three.
+***********************************
 
 
 * http://srp.github.com/mem[Home]
