@@ -37,18 +37,13 @@ def get_build_dir(env, arg_func):
         return mem.cwd
 
     try:
-        func = env.BUILD_DIR_FUNC
-
-        if func:
-            return func(env)
+        if env.BUILD_DIR_FUNC:
+            return env.BUILD_DIR_FUNC(env)
     except AttributeError:
         pass
 
-    try:
-        if not env.BUILD_DIR:
-            return src_dir
-    except AttributeError:
-        pass
+    if "BUILD_DIR" not in env or not env.BUILD_DIR:
+        return mem.cwd
 
     root = mem.root
     src_dir = mem.cwd
@@ -58,7 +53,6 @@ def get_build_dir(env, arg_func):
                  "unable to generate a build path" % src_dir, root)
 
     sub_dir = src_dir[len(root) + 1:]
-
 
     dir = os.path.join(root, env.BUILD_DIR, sub_dir)
 
