@@ -1,0 +1,51 @@
+:pagetitle:mem: about.
+
+image:mem.png[mem]: about.
+==========================
+
+include::nav.inc[]
+
+Why a new build system?
+-----------------------
+
+There are no shortage of build systems, what justifies the existence
+of yet another one?
+
+Mem is a completely different approach to build systems, one base on
+function memoization. Most build systems are based on building up some
+static graph of dependencies and targets, traversing that graph while
+minimally rebuilding, propagating changed objects across the graph for
+calculating further steps; usually with very special languages and
+sophisticated layers for automatically building the graph, easing
+the job of the end user in describing their build.
+
+Practically, mem is different in that:
+
+* the build is simply a script where certain functions are memoized (cached)
+* these memoized functions are only rebuilt if one of their inputs changes
+
+The first part means that you can script your build however is most
+natural to solve your specific build requirements, and mem sits in the
+background and caches and avoids duplicate evaluations (eg needless
+rebuilding).
+
+The second part means exactly what it says. This can be startling at
+first. For instance, suppose you had a '.c' file, and a build step to
+compile it into an object and a build step to link that into a
+program. If you make a whitespace change to that '.c' file, such as
+changing a comment; the resulting object will likely be identical
+(sha1) as the object before this change was made. Given that mem only
+builds when things are changed, no relinking will be done as the
+object to link will be unchanged!
+
+System Requirements
+-------------------
+
+Mem requires Python 2.5 or greater.
+
+Attribution
+-----------
+
+Mem has shamelessly pulled ideas from, in no particular order:
+http://git-scm.com/[git], http://ccache.samba.org/[ccache],
+http://scons.org/[scons], http://code.google.com/p/waf/[waf].
