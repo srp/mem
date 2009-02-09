@@ -1,0 +1,6 @@
+# -*- mode: python -*-
+import mem
+
+def build():
+    hello_o = mem.tasks.gcc.obj("hello.c")
+    mem.tasks.gcc.prog("hello", hello_o)
