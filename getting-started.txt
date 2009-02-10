@@ -15,7 +15,8 @@ with.
 Hello, World
 ~~~~~~~~~~~~
 
-In a new directory, create the following files:
+Either find the following files in the "examples/hello",
+directory, or create a new directory and create these files:
 
 .hello.c
 [c]
@@ -33,10 +34,45 @@ source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .MemfileRoot
 [python]
 source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# -*- mode: python -*-
 import mem
 
 def build():
     hello_o = mem.tasks.gcc.obj("hello.c")
     mem.tasks.gcc.prog("hello", hello_o)
 source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When _mem_ is ran, it looks up your directory hierarchy towards the
+root directory for the first _MemfileRoot_ it can find; it will import
+it and then run the _build()_ method on it. From here you can do
+pretty much anything you like to script your build. In this case we
+are calling two predefined build tasks: _gcc.obj()_ and
+_gcc.prog()_. The first one calls gcc to convert a _.c_ file into a
+_.o_ file, the latter one links objects into a program.
+
+Here's what it looks like to build:
+
+[python]
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[0]~/git/mem/examples/hello [master]$ mem
+gcc -I/Users/srp/git/mem-src/examples/hello -M -o - /Users/srp/git/mem-src/examples/hello/hello.c
+gcc -I/Users/srp/git/mem-src/examples/hello -c -o /Users/srp/git/mem-src/examples/hello/hello.o /Users/srp/git/mem-src/examples/hello/hello.c
+gcc -o /Users/srp/git/mem-src/examples/hello/hello
+/Users/srp/git/mem-src/examples/hello/hello.o
+[0]~/git/mem/examples/hello [master]$ ./hello
+Hello, World
+[0]~/git/mem-src/examples/hello [master]$
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you're wondering about why _gcc_ is called three times; _gcc.obj()_
+actually does more then just create an object, it also calls _gcc -M_
+(eg _make depends_) which instructs _gcc_ to give a list of
+dependencies of this file, such as all of the headers it ultimately
+recursively uses.
+
+The mem philosophy is that the end user shouldn't have to worry about
+getting dependencies correct--the dependencies should be implicit in
+the build commands themsevles. As such, most well created mem tasks
+will automatically find their own dependencies.
+
 
