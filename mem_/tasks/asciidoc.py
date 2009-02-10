@@ -19,17 +19,38 @@
 # SOFTWARE.
 
 import os
+import re
 import sys
 import commands
 import mem
 import subprocess
 from subprocess import PIPE
 
+scanner_re = re.compile("include::(.+)\[\]")
+
+def scan(file):
+    path = os.path.dirname(file)
+    f = open(file, "r")
+    try:
+        l = f.readline()
+        incs = []
+        while l != "":
+            m = scanner_re.match(l)
+            if m:
+                incs.append(os.path.join(path, m.group(1)))
+            l = f.readline()
+        for inc in incs:
+            mem.add_dep(mem.nodes.File(inc))
+            scan(inc)
+    finally:
+        f.close()
+
 @mem.util.with_env(ASCIIDOC_FLAGS=[])
 @mem.memoize
 def t_asciidoc(target, source, ASCIIDOC_FLAGS):
     """ Runs asciidoc compiler on specified files """
     mem.add_dep(mem.util.convert_to_file(source))
+    scan(source)
 
     cmd = mem.util.convert_cmd(["asciidoc","-o",target]+ASCIIDOC_FLAGS+[source])
 
