@@ -5,6 +5,7 @@ image:mem.png[mem]: getting started.
 
 include::nav.inc[]
 
+
 Using mem with existing functions
 ---------------------------------
 
@@ -12,13 +13,14 @@ While its easy to add new kinds of new memoized build functions, lets
 start with some examples of using mem with the functions that it come
 with.
 
+
 Hello, World
 ~~~~~~~~~~~~
 
 Either find the following files in the "examples/hello",
 directory, or create a new directory and create these files:
 
-.hello.c
+.examples/hello-1/hello.c
 [c]
 source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #include <stdio.h>
@@ -31,7 +33,7 @@ main(int argc, char **argv)
 }
 source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.MemfileRoot
+.examples/hello-1/MemfileRoot
 [python]
 source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # -*- mode: python -*-
@@ -52,16 +54,16 @@ _.o_ file, the latter one links objects into a program.
 
 Here's what it looks like to build:
 
-[python]
+.Running mem
+[sh]
 source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-[0]~/git/mem/examples/hello [master]$ mem
-gcc -I/Users/srp/git/mem-src/examples/hello -M -o - /Users/srp/git/mem-src/examples/hello/hello.c
-gcc -I/Users/srp/git/mem-src/examples/hello -c -o /Users/srp/git/mem-src/examples/hello/hello.o /Users/srp/git/mem-src/examples/hello/hello.c
-gcc -o /Users/srp/git/mem-src/examples/hello/hello
-/Users/srp/git/mem-src/examples/hello/hello.o
-[0]~/git/mem/examples/hello [master]$ ./hello
+[0]~/git/mem/examples/hello-1 [master]$ mem
+gcc -M -o - /Users/srp/git/mem-src/examples/hello-1/hello-1.c
+gcc -c -o /Users/srp/git/mem-src/examples/hello-1/hello.o /Users/srp/git/mem-src/examples/hello-1/hello.c
+gcc -o /Users/srp/git/mem-src/examples/hello-1/hello /Users/srp/git/mem-src/examples/hello-1/hello.o
+[0]~/git/mem/examples/hello-1 [master]$ ./hello
 Hello, World
-[0]~/git/mem-src/examples/hello [master]$
+[0]~/git/mem-src/examples/hello-1 [master]$
 source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you're wondering about why _gcc_ is called three times; _gcc.obj()_
@@ -75,4 +77,165 @@ getting dependencies correct--the dependencies should be implicit in
 the build commands themsevles. As such, most well created mem tasks
 will automatically find their own dependencies.
 
+Restoration
+~~~~~~~~~~~
+
+The name "mem" comes from the fact that "memoization" is used as the
+basis of building. Basically this just means that certain function
+calls of the build are cached so that the work will not have to be
+identically repeated. Obviously this has to include the file
+system. To see this in action, let's repeat the build:
+
+.Running mem again
+[sh]
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[0]~/git/mem-src/examples/hello-1 [master]$ mem
+[0]~/git/mem-src/examples/hello-1 [master]$
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+And even better, if we blow away or mame the files it produced and then rerun
+it:
+
+.Running mem yet again
+[sh]
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[0]~/git/mem-src/examples/hello-1 [master]$ rm hello
+[0]~/git/mem-src/examples/hello-1 [master]$ echo "jab" > hello.o
+[0]~/git/mem-src/examples/hello-1 [master]$ mem
+Restoring: /Users/srp/git/mem-src/examples/hello-1/hello.o
+Restoring: /Users/srp/git/mem-src/examples/hello-1/hello
+[0]~/git/mem-src/examples/hello-1 [master]$
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Environments: configuration for build tasks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Likely you'll want to be able to control such things as which flags
+get passed to your compiler. Environment(s) are usually used for
+this. Most tasks will document which environment flags they look
+for. For example, the _gcc_ task looks for the _CFLAGS_ variable;
+here's our example with a few more flags added:
+
+.examples/hello-2/MemfileRoot
+[python]
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# -*- mode: python -*-
+import mem
+
+def build():
+    env = mem.nodes.Env(CFLAGS = ["-Wall", "-Werror", "-O3"])
+    hello_o = mem.tasks.gcc.obj("hello.c", env=env)
+    mem.tasks.gcc.prog("hello", hello_o, env=env)
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As you see, _CFLAGS_ expects the flags to pass to gcc to be passed as
+a list of strings; much the same way as the POSIX API _execve()_ uses
+an arrays of strings.
+
+.Running mem
+[sh]
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[0]~/git/mem-src/examples/hello-2 [master]$ mem
+gcc -Wall -Werror -O3 -M -o - /Users/srp/git/mem-src/examples/hello-2/hello.c
+gcc -Wall -Werror -O3 -c -o /Users/srp/git/mem-src/examples/hello-2/hello.o /Users/srp/git/mem-src/examples/hello-2/hello.c
+gcc -o /Users/srp/git/mem-src/examples/hello-2/hello -Wall -Werror -O3 /Users/srp/git/mem-src/examples/hello-2/hello.o
+[0]~/git/mem-src/examples/hello-2 [master]$
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+More on restoration
+~~~~~~~~~~~~~~~~~~~
+
+Earlier we saw how mem will restore target files that got removed or
+changed; it also remembers how to do this across changed builds. For
+example, if we edit the _MemfileRoot_ to have "-O2 -g" instead of
+"-O3" and rebuild we should see something like the following, as we'd
+expect:
+
+.Running mem with "-O2 -g"
+[sh]
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[0]~/git/mem-src/examples/hello-2 [master]$ mem
+gcc -Wall -Werror -O2 -M -o - /Users/srp/git/mem-src/examples/hello-2/hello.c
+gcc -Wall -Werror -O2 -c -o /Users/srp/git/mem-src/examples/hello-2/hello.o /Users/srp/git/mem-src/examples/hello-2/hello.c
+gcc -o /Users/srp/git/mem-src/examples/hello-2/hello -Wall -Werror -O2 /Users/srp/git/mem-src/examples/hello-2/hello.o
+[0]~/git/mem-src/examples/hello-2 [master]$
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+However, if we change the flag back to -O3 we'll observe:
+
+.Running mem with -O3 again
+[sh]
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[0]~/git/mem-src/examples/hello-2 [master]$ mem
+[0]~/git/mem-src/examples/hello-2 [master]$
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+What's going on?
+
+Two things: first mem remembers previous builds, so it remembered the
+build with "-O3" and would normally just restore that without having
+to do any recompiling (as long as nothing else changes); the second
+thing is that in this simple case, gcc produces the same thing for
+"-O2" as "-O3" and mem effectively notices that nothing needs to be
+restored when we return to "-O3", as all of the target files are
+already as they should be.
+
+Per function configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Environment variables can also be overriden on a per function call
+basis:
+
+.examples/hello-3/MemfileRoot
+[python]
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# -*- mode: python -*-
+import mem
+
+def build():
+    env = mem.nodes.Env(CFLAGS = ["-Wall", "-Werror", "-O3"])
+    hello_o = mem.tasks.gcc.obj("hello.c", CFLAGS=["-Wall", "-g"], env=env)
+    mem.tasks.gcc.prog("hello", hello_o, env=env)
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.Running mem
+[sh]
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[0]~/git/mem-src/examples/hello-3 [master]$ mem
+gcc -Wall -g -M -o - /Users/srp/git/mem-src/examples/hello-3/hello.c
+gcc -Wall -g -c -o /Users/srp/git/mem-src/examples/hello-3/hello.o /Users/srp/git/mem-src/examples/hello-3/hello.c
+gcc -o /Users/srp/git/mem-src/examples/hello-3/hello -Wall -Werror -O3 /Users/srp/git/mem-src/examples/hello-3/hello.o
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Build Directories
+~~~~~~~~~~~~~~~~~
+
+Many find it in poor taste to build directly in the source directory;
+mem easily allows for placing built files in a separate
+directory. This can be done by setting the _BUILD_DIR_ environment
+variable:
+
+.examples/hello-4/MemfileRoot
+[python]
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# -*- mode: python -*-
+import mem
+
+def build():
+    env = mem.nodes.Env(CFLAGS = ["-Wall", "-Werror", "-O3"],
+                        BUILD_DIR = "build")
+    hello_o = mem.tasks.gcc.obj("hello.c", env=env)
+    mem.tasks.gcc.prog("hello", hello_o, env=env)
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.Running mem
+[sh]
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[0]~/git/mem-src/examples/hello-4 [master]$ mem
+gcc -Wall -Werror -O3 -I/Users/srp/git/mem-src/examples/hello-4/build -M -o - /Users/srp/git/mem-src/examples/hello-4/hello.c
+gcc -Wall -Werror -O3 -I/Users/srp/git/mem-src/examples/hello-4/build -c -o /Users/srp/git/mem-src/examples/hello-4/build/hello.o /Users/srp/git/mem-src/examples/hello-4/hello.c
+gcc -o /Users/srp/git/mem-src/examples/hello-4/build/hello -Wall -Werror -O3 /Users/srp/git/mem-src/examples/hello-4/build/hello.o
+[0]~/git/mem-src/examples/hello-4 [master]$
+source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
