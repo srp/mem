@@ -39,7 +39,7 @@ class NodeError(exceptions.Exception):
 
 
 class File(object):
-    hash_cache = {}
+    _hash_cache = {}
 
     def __init__(self, path, filehash=None):
 	import mem
@@ -89,10 +89,10 @@ class File(object):
 
     def get_hash(self):
         try:
-            return File.hash_cache[self.path]
+            return File._hash_cache[self.path]
         except KeyError:
             h = self._hash()
-            File.hash_cache[self.path] = h
+            File._hash_cache[self.path] = h
             return h
 
     def _hash(self):
