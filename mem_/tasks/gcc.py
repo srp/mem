@@ -28,12 +28,16 @@ import mem
 
 File = mem.nodes.File
 
+def target_inc_flag(target, source):
+    if os.path.dirname(target) != os.path.dirname(source):
+        return ["-I" + os.path.dirname(target)]
+    return []
+
 def make_depends(target, source, CFLAGS, CPPPATH):
     includes = ["-I" + path for path in CPPPATH]
     args = mem.util.convert_cmd(["gcc"] + CFLAGS +
-                                ["-I" +
-                                 os.path.dirname(target)] +
-                                includes + ["-M", "-o", "-", source])
+                                includes + target_inc_flag(target, source) +
+                                ["-M", "-o", "-", source])
     print " ".join(args)
     p = subprocess.Popen(args, stdin = PIPE, stdout = PIPE)
     deps = p.stdout.read().split()
@@ -54,8 +58,7 @@ def t_c_obj(target, source, CFLAGS, CPPPATH):
                   make_depends(target, source, CFLAGS=CFLAGS, CPPPATH=CPPPATH)])
     includes = ["-I" + path for path in CPPPATH]
     args = mem.util.convert_cmd(["gcc"] +  CFLAGS + includes +
-                                ["-I" +
-                                 os.path.dirname(target)] +
+                                target_inc_flag(target, source) +
                                 ["-c", "-o", target, source])
     print " ".join(args)
 
@@ -76,8 +79,7 @@ def t_cpp_obj(target, source, CXXFLAGS, CPPPATH):
                                CFLAGS=CXXFLAGS, CPPPATH=CPPPATH)])
     includes = ["-I" + path for path in CPPPATH]
     args = mem.util.convert_cmd(["g++"] +  CXXFLAGS + includes +
-                                ["-I" +
-                                 os.path.dirname(target)] +
+                                target_inc_flag(target, source) +
                                 ["-c", "-o", target, source])
     print " ".join(args)
 
