@@ -97,7 +97,7 @@ def t_prog(target, objs, CFLAGS, LIBS, LIBPATH):
     nlibs = map(lambda a: "-l" + str(a), LIBS)
 
     args = mem.util.convert_cmd(["gcc", "-o", target] + CFLAGS +
-                                npaths + nlibs + [o.path for o in objs])
+                                npaths + nlibs + objs)
 
     print " ".join(args)
 

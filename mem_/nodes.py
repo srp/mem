@@ -30,54 +30,49 @@ import sys
 import exceptions
 class NodeError(exceptions.Exception):
     def __init__(self, message):
-	self.message = message
+        self.message = message
 
     def __str__(self):
-	return self.message
+        return self.message
 
 
-
-
-class File(object):
+class File(str):
     _hash_cache = {}
 
-    def __init__(self, path, filehash=None):
+    def __init__(self, file, filehash=None):
 	import mem
-        self.path = os.path.join(mem.cwd, path)
+        path = os.path.join(mem.cwd, file)
 	if mem.failed:
 		sys.exit(1)
         if not os.path.exists(path):
             raise NodeError("%s does not exist!" % path)
-
-        self.hash = filehash or self.get_hash()
+        str.__init__(self, path)
+        self._hash = filehash or self.get_hash()
 
     def __repr__(self):
-        return "File(path='%s', hash='%s')" % (self.path, self.hash)
-
-    def __str__(self):
-        return self.path
+        return "File('%s', hash='%s')" % (self, self._hash)
 
     def _is_changed(self):
-        return self.get_hash() != self.hash
+        return self.get_hash() != self._hash
 
     def _store_path(self):
-        h = self.hash
+        h = self._hash
         return os.path.join(mem.blob_dir, h[:2], h[2:])
 
     def restore(self):
-        if not os.path.exists(self.path):
+        if not os.path.exists(self):
             self._restore()
         elif self._is_changed():
             self._restore()
 
     def _restore(self):
-        if not os.path.exists(os.path.dirname(self.path)):
-	    os.makedirs(os.path.dirname(self.path))
-        if os.path.exists(self.path):
-            os.unlink(self.path)
-        with open(self.path, "wb") as f:
-            print "Restoring:", self.path
-            shutil.copy2(self._store_path(), self.path)
+        if not os.path.exists(os.path.dirname(self)):
+	    os.makedirs(os.path.dirname(self))
+        if os.path.exists(self):
+            os.unlink(self)
+        with open(self, "wb") as f:
+            print "Restoring:", self
+            shutil.copy2(self._store_path(), self)
             return self
 
     def store(self):
@@ -85,24 +80,24 @@ class File(object):
         mem.util.ensure_file_dir(spath)
         if os.path.exists(self._store_path()):
             return
-        shutil.copy2(self.path, spath)
+        shutil.copy2(self, spath)
 
     def get_hash(self):
         try:
-            return File._hash_cache[self.path]
+            return File._hash_cache[self]
         except KeyError:
-            h = self._hash()
-            File._hash_cache[self.path] = h
+            h = self._compute_hash()
+            File._hash_cache[self] = h
             return h
 
-    def _hash(self):
-        if not os.path.exists(self.path):
+    def _compute_hash(self):
+        if not os.path.exists(self):
             # if the file doesn't exist, hash to something unique
             # so that cache lookup will fail
             return "NOT FOUND"
-	f = open(self.path, "rb")
+	f = open(self, "rb")
         s = sha.sha()
-        st = os.stat(self.path)
+        st = os.stat(self)
         s.update("blob %d %d\0" % (st[os.path.stat.ST_SIZE],
                                    st[os.path.stat.ST_MODE]))
         data = f.read(1<<16)
@@ -114,9 +109,13 @@ class File(object):
 
     def __getstate__(self):
         """return the part of the state to pickle when acting as a result"""
-        return {"path": self.path,
-                "hash": self.hash}
+        return {"path": self,
+                "hash": self._hash}
 
+    def __setstate__(self, d):
+        """return the part of the state to pickle when acting as a result"""
+        str.__init__(self, d["path"])
+        self._hash = d["hash"]
 
 class Env(dict):
     def __getattr__(self, key):
