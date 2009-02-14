@@ -52,6 +52,31 @@ class File(str):
     def __repr__(self):
         return "File('%s', hash='%s')" % (self, self._hash)
 
+    #
+    # user convience functions
+    #
+    def basename(self):
+        return os.path.basename(self)
+
+    def dirname(self):
+        return os.path.dirname(self)
+
+    def exists(self):
+        return os.path.exists(self)
+
+    def splitext(self):
+        return os.path.splitext(self)
+
+    def stat(self):
+        return os.stat(self)
+
+    def unlink(self):
+        return os.unlink(self)
+
+    #
+    # methods for acting as a node
+    #
+
     def _is_changed(self):
         return self.get_hash() != self._hash
 
@@ -60,16 +85,16 @@ class File(str):
         return os.path.join(mem.blob_dir, h[:2], h[2:])
 
     def restore(self):
-        if not os.path.exists(self):
+        if not self.exists():
             self._restore()
         elif self._is_changed():
             self._restore()
 
     def _restore(self):
-        if not os.path.exists(os.path.dirname(self)):
-	    os.makedirs(os.path.dirname(self))
-        if os.path.exists(self):
-            os.unlink(self)
+        if not os.path.exists(self.dirname()):
+	    os.makedirs(self.dirname())
+        if self.exists():
+            self.unlink()
         with open(self, "wb") as f:
             print "Restoring:", self
             shutil.copy2(self._store_path(), self)
@@ -91,13 +116,13 @@ class File(str):
             return h
 
     def _compute_hash(self):
-        if not os.path.exists(self):
+        if not self.exists():
             # if the file doesn't exist, hash to something unique
             # so that cache lookup will fail
             return "NOT FOUND"
 	f = open(self, "rb")
         s = sha.sha()
-        st = os.stat(self)
+        st = self.stat()
         s.update("blob %d %d\0" % (st[os.path.stat.ST_SIZE],
                                    st[os.path.stat.ST_MODE]))
         data = f.read(1<<16)
