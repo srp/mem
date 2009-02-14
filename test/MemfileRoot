@@ -21,9 +21,9 @@ def setup_paths(env):
 
 def build():
 
-    env = mem.nodes.Env(c = mem.tasks.gcc,
-                        CFLAGS = ["-O1", "-Wall", "-Wextra"],
-                        BUILD_DIR = "mem_build")
+    env = mem.util.Env(c = mem.tasks.gcc,
+                       CFLAGS = ["-O1", "-Wall", "-Wextra"],
+                       BUILD_DIR = "mem_build")
 
     setup_paths(env)
 

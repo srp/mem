@@ -185,3 +185,42 @@ class Runable(Thread):
 
         if mem.failed:
             sys.exit(1)
+
+
+class Env(dict):
+    def __getattr__(self, key):
+        try:
+            return self[key]
+        except KeyError:
+            raise AttributeError("'Env' object has no attribute '%s'" % key)
+
+    def __setattr__(self, key, val):
+	self[key] = val
+
+    def __repr__(self):
+        return "Env(" + " ".join("%s=%s" % (k, repr(v))
+                                 for k,v in self.items()) + ")"
+
+    def __str__(self):
+        return repr(self)
+
+    def copy(self):
+        return Env(dict.copy(self))
+
+    def replace(self, **kwargs):
+        for key, value in kwargs.items():
+            if type(value) == str:
+                self[key] = value % self
+            elif type(value) == list:
+                nlist = []
+                for el in value:
+                    if type(el) == str:
+                        nlist.append(el % self)
+                    else:
+                        nlist.append(el)
+                self[key] = nlist
+            else:
+                self[key] = value
+
+    def subst(self, value):
+        return value % self

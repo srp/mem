@@ -2,6 +2,6 @@
 import mem
 
 def build():
-    env = mem.nodes.Env(CFLAGS = ["-Wall", "-Werror", "-O3"])
+    env = mem.util.Env(CFLAGS = ["-Wall", "-Werror", "-O3"])
     hello_o = mem.tasks.gcc.obj("hello.c", env=env)
     mem.tasks.gcc.prog("hello", hello_o, env=env)
