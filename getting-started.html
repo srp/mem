@@ -351,7 +351,7 @@ with.</p></div>
 <div class="para"><p>Either find the following files in the "examples/hello",
 directory, or create a new directory and create these files:</p></div>
 <div class="listingblock">
-<div class="title">Example: hello.c</div>
+<div class="title">Example: examples/hello-1/hello.c</div>
 <div class="content"><!-- Generator: GNU source-highlight 2.11
 by Lorenzo Bettini
 http://www.lorenzobettini.it
@@ -366,7 +366,7 @@ http://www.gnu.org/software/src-highlite -->
 <span style="color: #FF0000">}</span>
 </tt></pre></div></div>
 <div class="listingblock">
-<div class="title">Example: MemfileRoot</div>
+<div class="title">Example: examples/hello-1/MemfileRoot</div>
 <div class="content"><!-- Generator: GNU source-highlight 2.11
 by Lorenzo Bettini
 http://www.lorenzobettini.it
@@ -387,18 +387,18 @@ are calling two predefined build tasks: <em>gcc.obj()</em> and
 <em>.o</em> file, the latter one links objects into a program.</p></div>
 <div class="para"><p>Here's what it looks like to build:</p></div>
 <div class="listingblock">
+<div class="title">Example: Running mem</div>
 <div class="content"><!-- Generator: GNU source-highlight 2.11
 by Lorenzo Bettini
 http://www.lorenzobettini.it
 http://www.gnu.org/software/src-highlite -->
-<pre><tt><span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~/</span>git<span style="color: #990000">/</span>mem<span style="color: #990000">/</span>examples<span style="color: #990000">/</span>hello <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$ mem
-gcc <span style="color: #990000">-</span>I<span style="color: #990000">/</span>Users<span style="color: #990000">/</span>srp<span style="color: #990000">/</span>git<span style="color: #990000">/</span>mem<span style="color: #990000">-</span>src<span style="color: #990000">/</span>examples<span style="color: #990000">/</span>hello <span style="color: #990000">-</span>M <span style="color: #990000">-</span>o <span style="color: #990000">-</span> <span style="color: #990000">/</span>Users<span style="color: #990000">/</span>srp<span style="color: #990000">/</span>git<span style="color: #990000">/</span>mem<span style="color: #990000">-</span>src<span style="color: #990000">/</span>examples<span style="color: #990000">/</span>hello<span style="color: #990000">/</span>hello<span style="color: #990000">.</span>c
-gcc <span style="color: #990000">-</span>I<span style="color: #990000">/</span>Users<span style="color: #990000">/</span>srp<span style="color: #990000">/</span>git<span style="color: #990000">/</span>mem<span style="color: #990000">-</span>src<span style="color: #990000">/</span>examples<span style="color: #990000">/</span>hello <span style="color: #990000">-</span>c <span style="color: #990000">-</span>o <span style="color: #990000">/</span>Users<span style="color: #990000">/</span>srp<span style="color: #990000">/</span>git<span style="color: #990000">/</span>mem<span style="color: #990000">-</span>src<span style="color: #990000">/</span>examples<span style="color: #990000">/</span>hello<span style="color: #990000">/</span>hello<span style="color: #990000">.</span>o <span style="color: #990000">/</span>Users<span style="color: #990000">/</span>srp<span style="color: #990000">/</span>git<span style="color: #990000">/</span>mem<span style="color: #990000">-</span>src<span style="color: #990000">/</span>examples<span style="color: #990000">/</span>hello<span style="color: #990000">/</span>hello<span style="color: #990000">.</span>c
-gcc <span style="color: #990000">-</span>o <span style="color: #990000">/</span>Users<span style="color: #990000">/</span>srp<span style="color: #990000">/</span>git<span style="color: #990000">/</span>mem<span style="color: #990000">-</span>src<span style="color: #990000">/</span>examples<span style="color: #990000">/</span>hello<span style="color: #990000">/</span>hello
-<span style="color: #990000">/</span>Users<span style="color: #990000">/</span>srp<span style="color: #990000">/</span>git<span style="color: #990000">/</span>mem<span style="color: #990000">-</span>src<span style="color: #990000">/</span>examples<span style="color: #990000">/</span>hello<span style="color: #990000">/</span>hello<span style="color: #990000">.</span>o
-<span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~/</span>git<span style="color: #990000">/</span>mem<span style="color: #990000">/</span>examples<span style="color: #990000">/</span>hello <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$ <span style="color: #990000">./</span>hello
+<pre><tt><span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem/examples/hello-<span style="color: #993399">1</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$ mem
+gcc -M -o - /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">1</span>/hello-<span style="color: #993399">1</span><span style="color: #990000">.</span>c
+gcc -c -o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">1</span>/hello<span style="color: #990000">.</span>o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">1</span>/hello<span style="color: #990000">.</span>c
+gcc -o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">1</span>/hello /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">1</span>/hello<span style="color: #990000">.</span>o
+<span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem/examples/hello-<span style="color: #993399">1</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$ <span style="color: #990000">.</span>/hello
 Hello<span style="color: #990000">,</span> World
-<span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~/</span>git<span style="color: #990000">/</span>mem<span style="color: #990000">-</span>src<span style="color: #990000">/</span>examples<span style="color: #990000">/</span>hello <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$
+<span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">1</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$
 </tt></pre></div></div>
 <div class="para"><p>If you're wondering about why <em>gcc</em> is called three times; <em>gcc.obj()</em>
 actually does more then just create an object, it also calls <em>gcc -M</em>
@@ -409,10 +409,171 @@ recursively uses.</p></div>
 getting dependencies correct&#8212;the dependencies should be implicit in
 the build commands themsevles. As such, most well created mem tasks
 will automatically find their own dependencies.</p></div>
+<h3>Restoration</h3><div style="clear:left"></div>
+<div class="para"><p>The name "mem" comes from the fact that "memoization" is used as the
+basis of building. Basically this just means that certain function
+calls of the build are cached so that the work will not have to be
+identically repeated. Obviously this has to include the file
+system. To see this in action, let's repeat the build:</p></div>
+<div class="listingblock">
+<div class="title">Example: Running mem again</div>
+<div class="content"><!-- Generator: GNU source-highlight 2.11
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">1</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$ mem
+<span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">1</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$
+</tt></pre></div></div>
+<div class="para"><p>And even better, if we blow away or mame the files it produced and then rerun
+it:</p></div>
+<div class="listingblock">
+<div class="title">Example: Running mem yet again</div>
+<div class="content"><!-- Generator: GNU source-highlight 2.11
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">1</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$ rm hello
+<span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">1</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$ echo <span style="color: #FF0000">"jab"</span> <span style="color: #990000">&gt;</span> hello<span style="color: #990000">.</span>o
+<span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">1</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$ mem
+Restoring<span style="color: #990000">:</span> /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">1</span>/hello<span style="color: #990000">.</span>o
+Restoring<span style="color: #990000">:</span> /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">1</span>/hello
+<span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">1</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$
+</tt></pre></div></div>
+<h3>Environments: configuration for build tasks</h3><div style="clear:left"></div>
+<div class="para"><p>Likely you'll want to be able to control such things as which flags
+get passed to your compiler. Environment(s) are usually used for
+this. Most tasks will document which environment flags they look
+for. For example, the <em>gcc</em> task looks for the <em>CFLAGS</em> variable;
+here's our example with a few more flags added:</p></div>
+<div class="listingblock">
+<div class="title">Example: examples/hello-2/MemfileRoot</div>
+<div class="content"><!-- Generator: GNU source-highlight 2.11
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-style: italic"><span style="color: #9A1900"># -*- mode: python -*-</span></span>
+<span style="font-weight: bold"><span style="color: #000080">import</span></span> mem
+
+<span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">build</span></span><span style="color: #990000">():</span>
+    env <span style="color: #990000">=</span> mem<span style="color: #990000">.</span>nodes<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">Env</span></span><span style="color: #990000">(</span>CFLAGS <span style="color: #990000">=</span> <span style="color: #990000">[</span><span style="color: #FF0000">"-Wall"</span><span style="color: #990000">,</span> <span style="color: #FF0000">"-Werror"</span><span style="color: #990000">,</span> <span style="color: #FF0000">"-O3"</span><span style="color: #990000">])</span>
+    hello_o <span style="color: #990000">=</span> mem<span style="color: #990000">.</span>tasks<span style="color: #990000">.</span>gcc<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">obj</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"hello.c"</span><span style="color: #990000">,</span> env<span style="color: #990000">=</span>env<span style="color: #990000">)</span>
+    mem<span style="color: #990000">.</span>tasks<span style="color: #990000">.</span>gcc<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">prog</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"hello"</span><span style="color: #990000">,</span> hello_o<span style="color: #990000">,</span> env<span style="color: #990000">=</span>env<span style="color: #990000">)</span>
+</tt></pre></div></div>
+<div class="para"><p>As you see, <em>CFLAGS</em> expects the flags to pass to gcc to be passed as
+a list of strings; much the same way as the POSIX API <em>execve()</em> uses
+an arrays of strings.</p></div>
+<div class="listingblock">
+<div class="title">Example: Running mem</div>
+<div class="content"><!-- Generator: GNU source-highlight 2.11
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">2</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$ mem
+gcc -Wall -Werror -O<span style="color: #993399">3</span> -M -o - /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">2</span>/hello<span style="color: #990000">.</span>c
+gcc -Wall -Werror -O<span style="color: #993399">3</span> -c -o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">2</span>/hello<span style="color: #990000">.</span>o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">2</span>/hello<span style="color: #990000">.</span>c
+gcc -o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">2</span>/hello -Wall -Werror -O<span style="color: #993399">3</span> /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">2</span>/hello<span style="color: #990000">.</span>o
+<span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">2</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$
+</tt></pre></div></div>
+<h3>More on restoration</h3><div style="clear:left"></div>
+<div class="para"><p>Earlier we saw how mem will restore target files that got removed or
+changed; it also remembers how to do this across changed builds. For
+example, if we edit the <em>MemfileRoot</em> to have "-O2 -g" instead of
+"-O3" and rebuild we should see something like the following, as we'd
+expect:</p></div>
+<div class="listingblock">
+<div class="title">Example: Running mem with "-O2 -g"</div>
+<div class="content"><!-- Generator: GNU source-highlight 2.11
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">2</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$ mem
+gcc -Wall -Werror -O<span style="color: #993399">2</span> -M -o - /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">2</span>/hello<span style="color: #990000">.</span>c
+gcc -Wall -Werror -O<span style="color: #993399">2</span> -c -o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">2</span>/hello<span style="color: #990000">.</span>o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">2</span>/hello<span style="color: #990000">.</span>c
+gcc -o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">2</span>/hello -Wall -Werror -O<span style="color: #993399">2</span> /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">2</span>/hello<span style="color: #990000">.</span>o
+<span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">2</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$
+</tt></pre></div></div>
+<div class="para"><p>However, if we change the flag back to -O3 we'll observe:</p></div>
+<div class="listingblock">
+<div class="title">Example: Running mem with -O3 again</div>
+<div class="content"><!-- Generator: GNU source-highlight 2.11
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">2</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$ mem
+<span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">2</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$
+</tt></pre></div></div>
+<div class="para"><p>What's going on?</p></div>
+<div class="para"><p>Two things: first mem remembers previous builds, so it remembered the
+build with "-O3" and would normally just restore that without having
+to do any recompiling (as long as nothing else changes); the second
+thing is that in this simple case, gcc produces the same thing for
+"-O2" as "-O3" and mem effectively notices that nothing needs to be
+restored when we return to "-O3", as all of the target files are
+already as they should be.</p></div>
+<h3>Per function configuration</h3><div style="clear:left"></div>
+<div class="para"><p>Environment variables can also be overriden on a per function call
+basis:</p></div>
+<div class="listingblock">
+<div class="title">Example: examples/hello-3/MemfileRoot</div>
+<div class="content"><!-- Generator: GNU source-highlight 2.11
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-style: italic"><span style="color: #9A1900"># -*- mode: python -*-</span></span>
+<span style="font-weight: bold"><span style="color: #000080">import</span></span> mem
+
+<span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">build</span></span><span style="color: #990000">():</span>
+    env <span style="color: #990000">=</span> mem<span style="color: #990000">.</span>nodes<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">Env</span></span><span style="color: #990000">(</span>CFLAGS <span style="color: #990000">=</span> <span style="color: #990000">[</span><span style="color: #FF0000">"-Wall"</span><span style="color: #990000">,</span> <span style="color: #FF0000">"-Werror"</span><span style="color: #990000">,</span> <span style="color: #FF0000">"-O3"</span><span style="color: #990000">])</span>
+    hello_o <span style="color: #990000">=</span> mem<span style="color: #990000">.</span>tasks<span style="color: #990000">.</span>gcc<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">obj</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"hello.c"</span><span style="color: #990000">,</span> CFLAGS<span style="color: #990000">=[</span><span style="color: #FF0000">"-Wall"</span><span style="color: #990000">,</span> <span style="color: #FF0000">"-g"</span><span style="color: #990000">],</span> env<span style="color: #990000">=</span>env<span style="color: #990000">)</span>
+    mem<span style="color: #990000">.</span>tasks<span style="color: #990000">.</span>gcc<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">prog</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"hello"</span><span style="color: #990000">,</span> hello_o<span style="color: #990000">,</span> env<span style="color: #990000">=</span>env<span style="color: #990000">)</span>
+</tt></pre></div></div>
+<div class="listingblock">
+<div class="title">Example: Running mem</div>
+<div class="content"><!-- Generator: GNU source-highlight 2.11
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">3</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$ mem
+gcc -Wall -g -M -o - /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">3</span>/hello<span style="color: #990000">.</span>c
+gcc -Wall -g -c -o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">3</span>/hello<span style="color: #990000">.</span>o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">3</span>/hello<span style="color: #990000">.</span>c
+gcc -o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">3</span>/hello -Wall -Werror -O<span style="color: #993399">3</span> /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">3</span>/hello<span style="color: #990000">.</span>o
+</tt></pre></div></div>
+<h3>Build Directories</h3><div style="clear:left"></div>
+<div class="para"><p>Many find it in poor taste to build directly in the source directory;
+mem easily allows for placing built files in a separate
+directory. This can be done by setting the <em>BUILD_DIR</em> environment
+variable:</p></div>
+<div class="listingblock">
+<div class="title">Example: examples/hello-4/MemfileRoot</div>
+<div class="content"><!-- Generator: GNU source-highlight 2.11
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="font-style: italic"><span style="color: #9A1900"># -*- mode: python -*-</span></span>
+<span style="font-weight: bold"><span style="color: #000080">import</span></span> mem
+
+<span style="font-weight: bold"><span style="color: #0000FF">def</span></span> <span style="font-weight: bold"><span style="color: #000000">build</span></span><span style="color: #990000">():</span>
+    env <span style="color: #990000">=</span> mem<span style="color: #990000">.</span>nodes<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">Env</span></span><span style="color: #990000">(</span>CFLAGS <span style="color: #990000">=</span> <span style="color: #990000">[</span><span style="color: #FF0000">"-Wall"</span><span style="color: #990000">,</span> <span style="color: #FF0000">"-Werror"</span><span style="color: #990000">,</span> <span style="color: #FF0000">"-O3"</span><span style="color: #990000">],</span>
+                        BUILD_DIR <span style="color: #990000">=</span> <span style="color: #FF0000">"build"</span><span style="color: #990000">)</span>
+    hello_o <span style="color: #990000">=</span> mem<span style="color: #990000">.</span>tasks<span style="color: #990000">.</span>gcc<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">obj</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"hello.c"</span><span style="color: #990000">,</span> env<span style="color: #990000">=</span>env<span style="color: #990000">)</span>
+    mem<span style="color: #990000">.</span>tasks<span style="color: #990000">.</span>gcc<span style="color: #990000">.</span><span style="font-weight: bold"><span style="color: #000000">prog</span></span><span style="color: #990000">(</span><span style="color: #FF0000">"hello"</span><span style="color: #990000">,</span> hello_o<span style="color: #990000">,</span> env<span style="color: #990000">=</span>env<span style="color: #990000">)</span>
+</tt></pre></div></div>
+<div class="listingblock">
+<div class="title">Example: Running mem</div>
+<div class="content"><!-- Generator: GNU source-highlight 2.11
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">4</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$ mem
+gcc -Wall -Werror -O<span style="color: #993399">3</span> -I/Users/srp/git/mem-src/examples/hello-<span style="color: #993399">4</span>/build -M -o - /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">4</span>/hello<span style="color: #990000">.</span>c
+gcc -Wall -Werror -O<span style="color: #993399">3</span> -I/Users/srp/git/mem-src/examples/hello-<span style="color: #993399">4</span>/build -c -o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">4</span>/build/hello<span style="color: #990000">.</span>o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">4</span>/hello<span style="color: #990000">.</span>c
+gcc -o /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">4</span>/build/hello -Wall -Werror -O<span style="color: #993399">3</span> /Users/srp/git/mem-src/examples/hello-<span style="color: #993399">4</span>/build/hello<span style="color: #990000">.</span>o
+<span style="color: #990000">[</span><span style="color: #993399">0</span><span style="color: #990000">]~</span>/git/mem-src/examples/hello-<span style="color: #993399">4</span> <span style="color: #990000">[</span>master<span style="color: #990000">]</span>$
+</tt></pre></div></div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 10-Feb-2009 20:56:15 CDT
+Last updated 12-Feb-2009 19:45:08 CDT
 </div>
 </div>
 </body>
