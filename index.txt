@@ -18,6 +18,8 @@ make sure that they are only reevaluated when the inputs change.
 Features
 --------
 
+* changes in all inputs, including compiler flags, correctly triggers
+  rebuilds
 * build into separate directory
 * variant builds
 * portable (written in http://python.org/[Python])
