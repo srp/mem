@@ -44,3 +44,8 @@ Documentation
 -------------
 
 include::documentation.inc[]
+
+License
+-------
+
+http://en.wikipedia.org/wiki/MIT_License[MIT/X11]
