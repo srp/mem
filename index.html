@@ -351,6 +351,100 @@ build how you like, annotate your expensive leaf calls and mem will
 make sure that they are only reevaluated when the inputs change.</p></div>
 </div>
 </div>
+<h2>Features</h2>
+<div class="sectionbody">
+<div class="ilist"><ul>
+<li>
+<p>
+build into separate directory
+</p>
+</li>
+<li>
+<p>
+variant builds
+</p>
+</li>
+<li>
+<p>
+portable (written in <a href="http://python.org/">Python</a>)
+</p>
+</li>
+<li>
+<p>
+automatically determin's dependencies for supported languages
+</p>
+</li>
+<li>
+<p>
+comes with support for building c, c++, java, swig, asciidocs
+</p>
+</li>
+<li>
+<p>
+extending the build is extremely easy (write a memoized function)
+</p>
+</li>
+<li>
+<p>
+very fast: no dependency graph calculations needed&#8212;immediately
+  starts building
+</p>
+</li>
+<li>
+<p>
+build caching (eg like <a href="http://ccache.samba.org/">ccache</a>) is inherant
+  in build
+</p>
+</li>
+<li>
+<p>
+build is not file-system specific&#8212;build could be on in-process data
+  structures or anything external that supports hashing (eg S3)
+</p>
+</li>
+<li>
+<p>
+build is scripted in normal <a href="http://python.org/">Python</a>
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+not a build-specific half-baked language
+</p>
+</li>
+<li>
+<p>
+not a subset of Python: build can include exceptions, threading,
+  fork()ing, etc.
+</p>
+</li>
+<li>
+<p>
+can use the wealth of existing Python modules
+</p>
+</li>
+</ul></div>
+</li>
+<li>
+<p>
+build is dynamic:
+</p>
+<div class="ilist"><ul>
+<li>
+<p>
+no global graph of dependencies
+</p>
+</li>
+<li>
+<p>
+no requirement to know ahead of time what will be needing built nor
+  what output files will be produced
+</p>
+</li>
+</ul></div>
+</li>
+</ul></div>
+</div>
 <h2>Documentation</h2>
 <div class="sectionbody">
 <div class="ilist"><ul>
@@ -368,7 +462,7 @@ make sure that they are only reevaluated when the inputs change.</p></div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 10-Feb-2009 20:55:27 CDT
+Last updated 15-Feb-2009 10:03:50 CDT
 </div>
 </div>
 </body>
