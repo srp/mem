@@ -15,6 +15,31 @@ http://en.wikipedia.org/wiki/Memoization[memoization]. Script your
 build how you like, annotate your expensive leaf calls and mem will
 make sure that they are only reevaluated when the inputs change.
 
+Features
+--------
+
+* build into separate directory
+* variant builds
+* portable (written in http://python.org/[Python])
+* automatically determin's dependencies for supported languages
+* comes with support for building c, c++, java, swig, asciidocs
+* extending the build is extremely easy (write a memoized function)
+* very fast: no dependency graph calculations needed--immediately
+  starts building
+* build caching (eg like http://ccache.samba.org/[ccache]) is inherant
+  in build
+* build is not file-system specific--build could be on in-process data
+  structures or anything external that supports hashing (eg S3)
+* build is scripted in normal http://python.org/[Python]
+- not a build-specific half-baked language
+- not a subset of Python: build can include exceptions, threading,
+  fork()ing, etc.
+- can use the wealth of existing Python modules
+* build is dynamic:
+- no global graph of dependencies
+- no requirement to know ahead of time what will be needing built nor
+  what output files will be produced
+
 Documentation
 -------------
 
