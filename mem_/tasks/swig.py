@@ -104,7 +104,8 @@ def obj(sources, env=None, build_dir=None, **kwargs):
         else:
             ntargets.append(target)
 
-    ntargets.extend(env.c.obj(ctargets, env=env, CFLAGS=env.SWIG_CFLAGS))
+    ntargets.extend(env.c.obj(ctargets, env=env,
+                              CFLAGS=env.get("SWIG_CFLAGS", [])))
     jtargets.extend(env.java(jtargets, env=env,
                              JAVA_FLAGS=env.get("SWIG_JAVA_FLAGS", [])))
 
