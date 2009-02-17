@@ -54,7 +54,8 @@ def generate(BuildDir, source, SWIGFLAGS):
     mem.util.ensure_file_dir(BuildDir)
     tmpdir = tempfile.mkdtemp(dir=BuildDir)
 
-    args = mem.util.convert_cmd(['swig', '-outdir', tmpdir] +
+    wrap = os.path.join(BuildDir, os.path.splitext(source)[0] + "_wrap.c")
+    args = mem.util.convert_cmd(['swig', '-o', wrap, '-outdir', tmpdir] +
                                 SWIGFLAGS + [source])
     print " ".join(args)
 
@@ -68,7 +69,8 @@ def generate(BuildDir, source, SWIGFLAGS):
 
     os.rmdir(tmpdir)
 
-    return [mem.nodes.File(os.path.join(BuildDir, file)) for file in files]
+    return [mem.nodes.File(os.path.join(BuildDir, file)) for file in files] + \
+        [mem.nodes.File(wrap)]
 
 
 def obj(sources, env=None, build_dir=None, **kwargs):
@@ -104,10 +106,10 @@ def obj(sources, env=None, build_dir=None, **kwargs):
         else:
             ntargets.append(target)
 
-    ntargets.extend(env.c.obj(ctargets, env=env,
+    ctargets.extend(env.c.obj(ctargets, env=env,
                               CFLAGS=env.get("SWIG_CFLAGS", [])))
     if jtargets:
         jtargets.extend(env.java(jtargets, env=env,
                                  JAVA_FLAGS=env.get("SWIG_JAVA_FLAGS", [])))
 
-    return mem.util.convert_to_files(mem.util.flatten(ntargets + jtargets))
+    return mem.util.convert_to_files(ctargets + ntargets + jtargets)
