@@ -113,3 +113,11 @@ def obj(sources, env=None, build_dir=None, **kwargs):
                                  JAVA_FLAGS=env.get("SWIG_JAVA_FLAGS", [])))
 
     return mem.util.convert_to_files(ctargets + ntargets + jtargets)
+
+def only_object_files(lst):
+	return [a for a in lst if a.endswith(".o")]
+
+def shared_obj(shared_obj, sources, env=None, build_dir=None, **kwargs):
+    deps = obj(sources, env, build_dir, **kwargs)
+    objs = only_object_files(deps)
+    env.c.shared_obj(shared_obj, objs, env, build_dir, CFLAGS=env.SWIG_CFLAGS, **kwargs)

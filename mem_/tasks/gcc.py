@@ -167,3 +167,21 @@ def prog(target, objs, env=None, build_dir = None, **kwargs):
     ntarget = os.path.join(BuildDir, target)
     t_prog(ntarget, nobjs, env=env, **kwargs)
     return File(ntarget)
+
+def shared_obj(target, objs, env=None, build_dir = None, **kwargs):
+    """ Convert the list of objects into a program given the cflags """
+    nobjs = mem.util.flatten(objs)
+    BuildDir = mem.util.get_build_dir(env, build_dir)
+    ntarget = os.path.join(BuildDir, target)
+
+    if 'CFLAGS' in kwargs:
+        merged_CFLAGS = kwargs['CFLAGS'][:]
+        del kwargs['CFLAGS']
+    else:
+        merged_CFLAGS = env.CFLAGS[:]
+
+    merged_CFLAGS.insert(0, "-shared")
+
+    t_prog(ntarget, nobjs, env=env, CFLAGS=merged_CFLAGS, **kwargs)
+
+    return File(ntarget)
