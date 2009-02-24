@@ -54,7 +54,12 @@ def generate(BuildDir, source, SWIGFLAGS):
     mem.util.ensure_file_dir(BuildDir)
     tmpdir = tempfile.mkdtemp(dir=BuildDir)
 
-    wrap = os.path.join(BuildDir, os.path.splitext(source)[0] + "_wrap.c")
+    if "-c++" in SWIGFLAGS:
+        wrap_ext = ".cpp"
+    else:
+        wrap_ext = ".c"
+
+    wrap = os.path.join(BuildDir, os.path.splitext(source)[0] + "_wrap" + wrap_ext)
     args = mem.util.convert_cmd(['swig', '-o', wrap, '-outdir', tmpdir] +
                                 SWIGFLAGS + [source])
     print " ".join(args)
@@ -120,4 +125,13 @@ def only_object_files(lst):
 def shared_obj(shared_obj, sources, env=None, build_dir=None, **kwargs):
     deps = obj(sources, env, build_dir, **kwargs)
     objs = only_object_files(deps)
-    env.c.shared_obj(shared_obj, objs, env, build_dir, CFLAGS=env.SWIG_CFLAGS, **kwargs)
+    gcc_kwargs = kwargs.copy()
+    if 'SWIGFLAGS' in gcc_kwargs:
+        del gcc_kwargs['SWIGFLAGS']
+    if 'SWIG_CFLAGS' in gcc_kwargs:
+        del gcc_kwargs['SWIG_CFLAGS']
+        
+    additional_objs = gcc_kwargs.pop('additional_objs', [])
+
+    so = env.c.shared_obj(shared_obj, objs + additional_objs, env, build_dir, CFLAGS=env.SWIG_CFLAGS, **gcc_kwargs)
+    return [so] + objs

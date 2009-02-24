@@ -88,16 +88,16 @@ def t_cpp_obj(target, source, CXXFLAGS, CPPPATH):
         mem.fail()
     return File(target)
 
-@mem.util.with_env(CFLAGS=[], LIBS=[], LIBPATH=[])
+@mem.util.with_env(CFLAGS=[], LIBS=[], LIBPATH=[], LINKFLAGS=[])
 @mem.memoize
-def t_prog(target, objs, CFLAGS, LIBS, LIBPATH):
+def t_prog(target, objs, CFLAGS, LIBS, LIBPATH, LINKFLAGS):
     mem.add_deps(objs)
 
     npaths = map(lambda a: "-L" + str(a), LIBPATH)
     nlibs = map(lambda a: "-l" + str(a), LIBS)
 
-    args = mem.util.convert_cmd(["gcc", "-o", target] + CFLAGS +
-                                npaths + nlibs + objs)
+    args = mem.util.convert_cmd(["gcc", "-o", target] + CFLAGS + LINKFLAGS +
+                                npaths + objs + nlibs)
 
     print " ".join(args)
 
