@@ -39,14 +39,16 @@ class NodeError(exceptions.Exception):
 class File(str):
     _hash_cache = {}
 
-    def __init__(self, file, filehash=None):
+    def __new__(self, file, *args, **kwargs):
 	import mem
         path = os.path.join(mem.cwd, file)
 	if mem.failed:
 		sys.exit(1)
         if not os.path.exists(path):
             raise NodeError("%s does not exist!" % path)
-        str.__init__(self, path)
+        return str.__new__(self, path)
+
+    def __init__(self, file, filehash=None):
         self._hash = filehash or self.get_hash()
 
     def __repr__(self):
