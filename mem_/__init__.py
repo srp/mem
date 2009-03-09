@@ -112,9 +112,11 @@ class Mem(object):
             def __getattr__(self, memfunc):
                 def f(*args, **kwargs):
                     if memfunc not in self.mf.__dict__:
-                        self.fail("requested method '%s()' doesn't exist in %s" %
-                                  (memfunc,
-                                   os.path.join(self.orig_dir, self.memfile)))
+                        self.mem.fail("requested method '%s()' doesn't exist "
+                                      "in %s" %
+                                      (memfunc,
+                                       os.path.join(self.orig_dir,
+                                                    self.memfile)))
                     os.chdir(self.subdir)
                     self.mem.cwd = self.subdir
                     try:
