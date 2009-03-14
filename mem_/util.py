@@ -295,6 +295,11 @@ def import_module(name, fname=None):
     execfile(fname, m.__dict__, m.__dict__)
     return m
 
+def replace_ext(file, new, old=None):
+    (n, e) = os.path.splitext(file)
+    if old:
+        assert(e == old)
+    return n + new
 
 class Runable(Thread):
     def __init__(self, f, *args, **kwargs):
