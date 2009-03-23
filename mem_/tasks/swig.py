@@ -32,15 +32,7 @@ re_module = re.compile(r'%module(?:\s*\(.*\))?\s+(.+)')
 def make_depends(source, SWIGFLAGS):
     args = mem.util.convert_cmd(["swig"] + SWIGFLAGS +
                                 ["-M", source])
-    print " ".join(args)
-    p = subprocess.Popen(args, stdin = PIPE, stdout = PIPE)
-    deps = p.stdout.read().split()
-    if p.wait() != 0:
-        mem.fail()
-
-    deps = deps[1:] # first element is the target (eg ".c"), drop it
-    return [dep for dep in deps if dep != '\\']
-
+    return mem.util.make_depends("SWIG depends", source, args)
 
 @mem.util.with_env(SWIGFLAGS=[])
 @mem.memoize
@@ -62,10 +54,8 @@ def generate(BuildDir, source, SWIGFLAGS):
     wrap = os.path.join(BuildDir, os.path.splitext(source)[0] + "_wrap" + wrap_ext)
     args = mem.util.convert_cmd(['swig', '-o', wrap, '-outdir', tmpdir] +
                                 SWIGFLAGS + [source])
-    print " ".join(args)
 
-    p = subprocess.Popen(args, stdin = PIPE, stdout = PIPE)
-    if p.wait() != 0:
+    if mem.util.quietly_execute("SWIG generates", source, args) != 0:
         mem.fail()
 
     files = os.listdir(tmpdir)
@@ -130,8 +120,9 @@ def shared_obj(shared_obj, sources, env=None, build_dir=None, **kwargs):
         del gcc_kwargs['SWIGFLAGS']
     if 'SWIG_CFLAGS' in gcc_kwargs:
         del gcc_kwargs['SWIG_CFLAGS']
-        
+
     additional_objs = gcc_kwargs.pop('additional_objs', [])
 
-    so = env.c.shared_obj(shared_obj, objs + additional_objs, env, build_dir, CFLAGS=env.SWIG_CFLAGS, **gcc_kwargs)
+    so = env.c.shared_obj(shared_obj, objs + additional_objs, env, build_dir,
+                          CFLAGS=env.SWIG_CFLAGS, **gcc_kwargs)
     return [so] + objs

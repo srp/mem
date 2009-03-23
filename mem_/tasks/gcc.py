@@ -38,14 +38,7 @@ def make_depends(target, source, CFLAGS, CPPPATH):
     args = mem.util.convert_cmd(["gcc"] + CFLAGS +
                                 includes + target_inc_flag(target, source) +
                                 ["-M", "-o", "-", source])
-    print " ".join(args)
-    p = subprocess.Popen(args, stdin = PIPE, stdout = PIPE)
-    deps = p.stdout.read().split()
-    if p.wait() != 0:
-        mem.fail()
-
-    deps = deps[1:] # first element is the target (eg ".o"), drop it
-    return [dep for dep in deps if dep != '\\']
+    return mem.util.make_depends("Generating dependencies", source, args)
 
 @mem.util.with_env(CFLAGS=[], CPPPATH=[])
 @mem.memoize
@@ -60,11 +53,11 @@ def t_c_obj(target, source, CFLAGS, CPPPATH):
     args = mem.util.convert_cmd(["gcc"] +  CFLAGS + includes +
                                 target_inc_flag(target, source) +
                                 ["-c", "-o", target, source])
-    print " ".join(args)
-
     mem.util.ensure_file_dir(target)
-    if subprocess.call(args) != 0:
+
+    if mem.util.quietly_execute("Compiling", source, args) != 0:
         mem.fail()
+
     return File(target)
 
 @mem.util.with_env(CXXFLAGS=[], CPPPATH=[])
@@ -81,11 +74,12 @@ def t_cpp_obj(target, source, CXXFLAGS, CPPPATH):
     args = mem.util.convert_cmd(["g++"] +  CXXFLAGS + includes +
                                 target_inc_flag(target, source) +
                                 ["-c", "-o", target, source])
-    print " ".join(args)
 
     mem.util.ensure_file_dir(target)
-    if subprocess.call(args) != 0:
+
+    if mem.util.quietly_execute("Compiling", source, args) != 0:
         mem.fail()
+
     return File(target)
 
 @mem.util.with_env(CFLAGS=[], LIBS=[], LIBPATH=[], LINKFLAGS=[])
@@ -99,11 +93,11 @@ def t_prog(target, objs, CFLAGS, LIBS, LIBPATH, LINKFLAGS):
     args = mem.util.convert_cmd(["gcc", "-o", target] + CFLAGS + LINKFLAGS +
                                 npaths + objs + nlibs)
 
-    print " ".join(args)
-
     mem.util.ensure_file_dir(target)
-    if subprocess.call(args) != 0:
+
+    if mem.util.quietly_execute("Linking", target, args) != 0:
         mem.fail()
+
     return File(target)
 
 

@@ -23,6 +23,106 @@ import os
 import imp
 import sys
 from threading import Thread, Semaphore
+import subprocess
+import re
+
+RED    = chr(27) + "[31m"
+GREEN  = chr(27) + "[32m"
+YELLOW = chr(27) + "[33m"
+RESET  = chr(27) + "[0m"
+
+def quiet_level():
+    try:
+        quiet = int(os.environ['MEM_QUIET'])
+    except KeyError:
+        quiet = 0
+    return quiet
+
+def _is_dumb_term_():
+    try:
+        term = os.environ['TERM']
+    except KeyError:
+        term = ""
+
+    return re.search("emacs|dumb", term) != None
+
+def get_color_status(returncode):
+    use_color = not _is_dumb_term_()
+
+    if returncode != 0:
+        status = "ERROR"
+        color = RED
+    else:
+        status = "OK"
+        color = GREEN
+
+    if use_color:
+        status = "[%s%s%s]" % (color, status, RESET)
+    else:
+        status = "[%s]" % status
+
+    return status.rjust(16)
+
+def _mark_output_(s):
+    if not _is_dumb_term_():
+        s = re.sub("warning:", "%swarning:%s" % (YELLOW, RESET), s)
+        s = re.sub("error:", "%serror:%s" % (RED, RESET), s)
+        s = re.sub("Warning", "%sWarning%s" % (YELLOW, RESET), s)
+
+    return s
+
+def _open_pipe_(args, shell=False):
+    p = subprocess.Popen(
+            args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=shell)
+
+    (stdoutdata, stderrdata) = p.communicate()
+
+    return (p.returncode, stdoutdata, stderrdata)
+
+def make_depends(prefix, source, args):
+    (returncode, stdoutdata, stderrdata) = \
+        colorful_run_no_print(prefix, source, _open_pipe_, args)
+
+    deps = stdoutdata.split()
+
+    sys.stdout.write(_mark_output_(stderrdata))
+
+    if returncode != 0:
+        import mem
+        mem.fail()
+
+    deps = deps[1:] # first element is the target (eg ".c"), drop it
+    return [dep for dep in deps if dep != '\\']
+
+def colorful_run_no_print(prefix, source, fun, *args):
+    (returncode, stdoutdata, stderrdata) = apply(fun, args)
+    if quiet_level() > 0:
+        print get_color_status(returncode), prefix.rjust(25), os.path.basename(source)
+    elif len(args) > 0:
+        print " ".join(args[0])
+    else:
+        print str(fun)
+
+    return (returncode, stdoutdata, stderrdata)
+
+def colorful_run(prefix, source, fun, *args):
+    (returncode, stdoutdata, stderrdata) = \
+        colorful_run_no_print(prefix, source, fun, *args)
+    sys.stdout.write(_mark_output_(stdoutdata))
+    sys.stdout.write(_mark_output_(stderrdata))
+    if returncode != 0:
+        import mem
+        mem.fail()
+
+    return (returncode, stdoutdata, stderrdata)
+
+def quietly_execute(prefix, source, args, shell=False):
+    (returncode, stdoutdata, stderrdata) = \
+        colorful_run(prefix, source, _open_pipe_, args, shell)
+    return returncode
 
 def get_build_dir(env, arg_func):
     """ return a valid build directory given the environment """

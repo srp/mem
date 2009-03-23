@@ -33,10 +33,8 @@ def t_ar(target, sources, ARARGS, ARCMD):
 
     args = mem.util.convert_cmd([ARCMD] + ARARGS + [target] + sources)
 
-    print " ".join(args)
-
     mem.util.ensure_file_dir(target)
-    if subprocess.call(args) != 0:
+    if mem.util.quietly_execute("Building Library", target, args) != 0:
         mem.fail()
 
     return mem.nodes.File(target)
