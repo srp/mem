@@ -38,7 +38,7 @@ def make_depends(target, source, CFLAGS, CPPPATH):
     args = mem.util.convert_cmd(["gcc"] + CFLAGS +
                                 includes + target_inc_flag(target, source) +
                                 ["-M", "-o", "-", source])
-    return mem.util.make_depends("Generating dependencies", source, args)
+    return mem.util.make_depends("GCC depends", source, args)
 
 @mem.util.with_env(CFLAGS=[], CPPPATH=[])
 @mem.memoize
@@ -55,7 +55,7 @@ def t_c_obj(target, source, CFLAGS, CPPPATH):
                                 ["-c", "-o", target, source])
     mem.util.ensure_file_dir(target)
 
-    if mem.util.run("Compiling", source, args) != 0:
+    if mem.util.run("GCC", source, args) != 0:
         mem.fail()
 
     return File(target)

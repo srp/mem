@@ -55,7 +55,7 @@ def generate(BuildDir, source, SWIGFLAGS):
     args = mem.util.convert_cmd(['swig', '-o', wrap, '-outdir', tmpdir] +
                                 SWIGFLAGS + [source])
 
-    if mem.util.run("SWIG generates", source, args) != 0:
+    if mem.util.run("SWIG", source, args) != 0:
         mem.fail()
 
     files = os.listdir(tmpdir)
