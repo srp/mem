@@ -40,7 +40,7 @@ def quiet_level():
 
 def _is_dumb_term_():
     try:
-        return os.environ['TERM'] not in ("emacs", "dumb")
+        return os.environ['TERM'] in ("emacs", "dumb")
     except KeyError:
         return True
 
