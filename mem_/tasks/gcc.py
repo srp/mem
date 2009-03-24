@@ -55,7 +55,7 @@ def t_c_obj(target, source, CFLAGS, CPPPATH):
                                 ["-c", "-o", target, source])
     mem.util.ensure_file_dir(target)
 
-    if mem.util.quietly_execute("Compiling", source, args) != 0:
+    if mem.util.run("Compiling", source, args) != 0:
         mem.fail()
 
     return File(target)
@@ -77,7 +77,7 @@ def t_cpp_obj(target, source, CXXFLAGS, CPPPATH):
 
     mem.util.ensure_file_dir(target)
 
-    if mem.util.quietly_execute("Compiling", source, args) != 0:
+    if mem.util.run("Compiling", source, args) != 0:
         mem.fail()
 
     return File(target)
@@ -95,7 +95,7 @@ def t_prog(target, objs, CFLAGS, LIBS, LIBPATH, LINKFLAGS):
 
     mem.util.ensure_file_dir(target)
 
-    if mem.util.quietly_execute("Linking", target, args) != 0:
+    if mem.util.run("Linking", target, args) != 0:
         mem.fail()
 
     return File(target)

@@ -40,11 +40,9 @@ def quiet_level():
 
 def _is_dumb_term_():
     try:
-        term = os.environ['TERM']
+        return os.environ['TERM'] not in ("emacs", "dumb")
     except KeyError:
-        term = ""
-
-    return re.search("emacs|dumb", term) != None
+        return True
 
 def get_color_status(returncode):
     use_color = not _is_dumb_term_()
@@ -84,7 +82,7 @@ def _open_pipe_(args, shell=False):
 
 def make_depends(prefix, source, args):
     (returncode, stdoutdata, stderrdata) = \
-        colorful_run_no_print(prefix, source, _open_pipe_, args)
+        run_return_output_no_print(prefix, source, _open_pipe_, args)
 
     deps = stdoutdata.split()
 
@@ -97,20 +95,43 @@ def make_depends(prefix, source, args):
     deps = deps[1:] # first element is the target (eg ".c"), drop it
     return [dep for dep in deps if dep != '\\']
 
-def colorful_run_no_print(prefix, source, fun, *args):
+def run_return_output_no_print(prefix, source, fun, *args):
+    '''
+    run commands specified in args (a sequence or string), optionally in a
+    shell, and returns a tuple (resultcode, stdoutdata, stderrdata), where
+    stdoutdata and stderrdata are strings.
+
+    prefix will be truncated and right-justified to 25 characters
+    source
+    '''
     (returncode, stdoutdata, stderrdata) = apply(fun, args)
     if quiet_level() > 0:
-        print get_color_status(returncode), prefix.rjust(25), os.path.basename(source)
+        print get_color_status(returncode), prefix.rjust(25),
+        print os.path.basename(source)
     elif len(args) > 0:
-        print " ".join(args[0])
+        if isinstance(args[0], (str, unicode)):
+            print args[0]
+        else:
+            print " ".join(args[0])
     else:
         print str(fun)
 
     return (returncode, stdoutdata, stderrdata)
 
-def colorful_run(prefix, source, fun, *args):
+def run_return_output(prefix, source, fun, *args):
+    '''
+    run commands specified in args (a sequence or string), optionally in a
+    shell, and returns a tuple (resultcode, stdoutdata, stderrdata), where
+    stdoutdata and stderrdata are strings.
+
+    As a side effect, it also dump both stdoutdata and stderrdata to
+    sys.stdout.
+
+    prefix will be truncated and right-justified to 25 characters
+    source
+    '''
     (returncode, stdoutdata, stderrdata) = \
-        colorful_run_no_print(prefix, source, fun, *args)
+        run_return_output_no_print(prefix, source, fun, *args)
     sys.stdout.write(_mark_output_(stdoutdata))
     sys.stdout.write(_mark_output_(stderrdata))
     if returncode != 0:
@@ -119,10 +140,15 @@ def colorful_run(prefix, source, fun, *args):
 
     return (returncode, stdoutdata, stderrdata)
 
-def quietly_execute(prefix, source, args, shell=False):
-    (returncode, stdoutdata, stderrdata) = \
-        colorful_run(prefix, source, _open_pipe_, args, shell)
-    return returncode
+def run(prefix, source, args, shell=False):
+    '''
+    run commands specified in args (a sequence or string), optionally in a
+    shell, and returns the result code.
+
+    prefix will be truncated and right-justified to 25 characters
+    source
+    '''
+    return run_return_output(prefix, source, _open_pipe_, args, shell)[0]
 
 def get_build_dir(env, arg_func):
     """ return a valid build directory given the environment """
