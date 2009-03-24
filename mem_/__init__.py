@@ -126,6 +126,10 @@ class Mem(object):
                         self.mem.cwd = self.orig_dir
                     return result
                 return f
+
+            def __hasattr__(self, memfunc):
+                return self.mf.__hasattr__(memfunc)
+
         return Subdir(self, *args, **kwargs)
 
 
