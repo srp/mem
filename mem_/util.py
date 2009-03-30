@@ -44,9 +44,16 @@ def _is_dumb_term_():
     except KeyError:
         return True
 
-def get_color_status(returncode):
-    use_color = not _is_dumb_term_()
+# MEM_COLOR_LEVEL=0 to explicitly disable coloring
+def _should_color_():
+    try:
+        mem_color_level = int(os.environ['MEM_COLOR_LEVEL'])
+    except KeyError:
+        # By default enable coloring
+        mem_color_level = 1
+    return mem_color_level > 0 and not _is_dumb_term_()
 
+def get_color_status(returncode):
     if returncode != 0:
         status = "ERROR"
         color = RED
@@ -54,7 +61,7 @@ def get_color_status(returncode):
         status = "OK"
         color = GREEN
 
-    if use_color:
+    if _should_color_():
         status = "[%s%s%s]" % (color, status, RESET)
     else:
         status = "[%s]" % status
@@ -62,7 +69,7 @@ def get_color_status(returncode):
     return status.rjust(16)
 
 def _mark_output_(s):
-    if not _is_dumb_term_():
+    if _should_color_():
         s = re.sub("warning:", "%swarning:%s" % (YELLOW, RESET), s)
         s = re.sub("error:", "%serror:%s" % (RED, RESET), s)
         s = re.sub("Warning", "%sWarning%s" % (YELLOW, RESET), s)
