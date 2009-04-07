@@ -95,7 +95,7 @@ def make_depends(prefix, source, args):
     deps = deps[1:] # first element is the target (eg ".c"), drop it
     return [dep for dep in deps if dep != '\\']
 
-def run_return_output_no_print(prefix, source, fun, *args):
+def run_return_output_no_print(prefix, source, fun, *args, **kwargs):
     '''
     run commands specified in args (a sequence or string), optionally in a
     shell, and returns a tuple (resultcode, stdoutdata, stderrdata), where
@@ -104,17 +104,19 @@ def run_return_output_no_print(prefix, source, fun, *args):
     prefix will be truncated and right-justified to 25 characters
     source
     '''
-    (returncode, stdoutdata, stderrdata) = apply(fun, args)
+    (returncode, stdoutdata, stderrdata) = fun(*args, **kwargs)
     if quiet_level() > 0:
         print get_color_status(returncode), prefix.rjust(25),
         print os.path.basename(source)
-    elif len(args) > 0:
+    elif fun == _open_pipe_:
         if isinstance(args[0], (str, unicode)):
             print args[0]
         else:
             print " ".join(args[0])
+    elif args or kwargs:
+            print "%s(*%s, **%s)" % (fun.__name__, repr(args), repr(kwargs))
     else:
-        print str(fun)
+        print "%s()" % fun.__name__
 
     return (returncode, stdoutdata, stderrdata)
 
