@@ -111,19 +111,22 @@ def run_return_output_no_print(prefix, source, fun, *args, **kwargs):
     prefix will be truncated and right-justified to 25 characters
     source
     '''
-    (returncode, stdoutdata, stderrdata) = fun(*args, **kwargs)
-    if quiet_level() > 0:
-        print get_color_status(returncode), prefix.rjust(25),
-        print os.path.basename(source)
-    elif fun == _open_pipe_:
-        if isinstance(args[0], (str, unicode)):
-            print args[0]
-        else:
-            print " ".join(args[0])
-    elif args or kwargs:
+    e = None
+    try:
+        (returncode, stdoutdata, stderrdata) = fun(*args, **kwargs)
+    finally:
+        if quiet_level() > 0:
+            print get_color_status(returncode), prefix.rjust(25),
+            print os.path.basename(source)
+        elif fun == _open_pipe_:
+            if isinstance(args[0], (str, unicode)):
+                print args[0]
+            else:
+                print " ".join(args[0])
+        elif args or kwargs:
             print "%s(*%s, **%s)" % (fun.__name__, repr(args), repr(kwargs))
-    else:
-        print "%s()" % fun.__name__
+        else:
+            print "%s()" % fun.__name__
 
     return (returncode, stdoutdata, stderrdata)
 
