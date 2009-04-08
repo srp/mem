@@ -124,7 +124,10 @@ def run_return_output_no_print(prefix, source, fun, *args, **kwargs):
             else:
                 print " ".join(args[0])
         elif args or kwargs:
-            print "%s(*%s, **%s)" % (fun.__name__, repr(args), repr(kwargs))
+            allargs = [repr(a) for a in args] + \
+                ["%s=%s" % (str(k), repr(v))
+                 for k,v in kwargs.iteritems()]
+            print "%s(%s)" % (fun.__name__, ", ".join(allargs))
         else:
             print "%s()" % fun.__name__
 
