@@ -20,10 +20,10 @@
 
 from __future__ import with_statement
 import mem
+import hashlib
 import os
 import cPickle as pickle
 import types
-import sha
 import shutil
 import sys
 
@@ -123,7 +123,7 @@ class File(str):
             # so that cache lookup will fail
             return "NOT FOUND"
 	f = open(self, "rb")
-        s = sha.sha()
+        s = hashlib.sha1()
         st = self.stat()
         s.update("blob %d %d\0" % (st[os.path.stat.ST_SIZE],
                                    st[os.path.stat.ST_MODE]))

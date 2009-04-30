@@ -20,9 +20,9 @@
 
 import cPickle as pickle
 from cpu_count import cpu_count
+import hashlib
 import imp
 import os
-import sha
 import sys
 import types
 
@@ -181,7 +181,7 @@ class Mem(object):
                     return objs.get_hash()
                 else:
                     return pickle.dumps(objs, 2)
-        return sha.new(gh(o)).hexdigest()
+        return hashlib.sha1(gh(o)).hexdigest()
 
     def _deps_path(self, tchash):
         return os.path.join(self.deps_dir, tchash[:2], tchash[2:])
