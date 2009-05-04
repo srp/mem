@@ -30,10 +30,10 @@ import sys
 import exceptions
 class NodeError(exceptions.Exception):
     def __init__(self, message):
-        self.message = message
+        self.msg = message
 
     def __str__(self):
-        return self.message
+        return self.msg
 
 
 class File(str):
