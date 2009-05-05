@@ -168,7 +168,9 @@ class Mem(object):
 
     def get_hash(self, *o):
         def gh(objs):
-            if isinstance(objs, types.ModuleType):
+            if hasattr(objs, "get_hash"):
+                return objs.get_hash()
+            elif isinstance(objs, types.ModuleType):
                 return self.nodes.File(objs.__file__).get_hash()
             elif hasattr(objs, "__iter__"):
                 if isinstance(objs, dict):
@@ -176,11 +178,28 @@ class Mem(object):
                                              for k in objs])
                 else:
                     return "\1" + "\0".join([gh(obj) for obj in objs]) + "\1"
+            elif isinstance(objs, types.MethodType):
+                return ("\4%s\0%s\0%s" %
+                        (objs.__func__.__name__,
+                         objs.__module__,
+                         self.nodes.File(
+                            sys.modules[objs.__module__].__file__).get_hash()))
+            elif isinstance(objs, (types.FunctionType, types.TypeType)):
+                return ("\4%s\0%s\0%s" %
+                        (objs.__name__,
+                         objs.__module__,
+                         self.nodes.File(
+                            sys.modules[objs.__module__].__file__).get_hash()))
+            elif isinstance(objs, self.util.AutoHashable):
+                return "\5" + "\0".join([gh(getattr(objs, a))
+                                         for a in dir(objs)
+                                         if not a.startswith("__")])
+            elif isinstance(objs, (types.BuiltinMethodType,
+                                   types.BuiltinFunctionType,
+                                   self.__delattr__.__class__)):
+                return objs.__name__
             else:
-                if hasattr(objs, "get_hash"):
-                    return objs.get_hash()
-                else:
-                    return pickle.dumps(objs, 2)
+                return pickle.dumps(objs, 2)
         return hashlib.sha1(gh(o)).hexdigest()
 
     def _deps_path(self, tchash):

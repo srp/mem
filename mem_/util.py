@@ -365,3 +365,10 @@ class Env(dict):
 
     def subst(self, value):
         return value % self
+
+
+class AutoHashable(object):
+    """A parent class that indicates that the subclass is safe to be
+    auto-hashed (eg isn't holding file descriptors, random numbers,
+    etc)"""
+    pass
