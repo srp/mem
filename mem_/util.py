@@ -117,7 +117,13 @@ def run_return_output_no_print(prefix, source, fun, *args, **kwargs):
     finally:
         if quiet_level() > 0:
             print get_color_status(returncode), prefix.rjust(25),
-            print os.path.basename(source)
+            s = ""
+            if type(source) == list:
+                for src in source:
+                    s += os.path.basename(src) + " "
+            else:
+                s = os.path.basename(source)
+            print s
         elif fun == _open_pipe_:
             if isinstance(args[0], (str, unicode)):
                 print args[0]
