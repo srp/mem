@@ -40,16 +40,25 @@ def target_inc_flag(target, source_list):
 
 def make_depends(target, source_list, CFLAGS, CPPPATH, inc_dirs):
     includes = ["-I" + path for path in CPPPATH]
-
     deps = []
     for s in source_list:
-        args = mem.util.convert_cmd(["gcc"] + CFLAGS +
-                                    includes +
-                                    target_inc_flag(target, source_list) +
-                                    inc_dirs +
-                                    ["-M", "-o", "-", s])
-        deps += mem.util.make_depends("GCC depends", s, args)
+        deps += make_depends_single(target, s,
+                                    CFLAGS, includes,
+                                    target_inc_flag(target, source_list),
+                                    inc_dirs)
     return deps
+
+
+@mem.memoize
+def make_depends_single(target, source,
+                        CFLAGS, includes, target_inc, inc_dirs):
+    mem.add_dep(mem.util.convert_to_file(source))
+    args = mem.util.convert_cmd(["gcc"] + CFLAGS +
+                                includes +
+                                target_inc +
+                                inc_dirs +
+                                ["-M", "-o", "-", source])
+    return mem.util.make_depends("GCC depends", source, args)
 
 @mem.util.with_env(CFLAGS=[], CPPPATH=[])
 @mem.memoize
