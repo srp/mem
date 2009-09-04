@@ -112,6 +112,7 @@ def run_return_output_no_print(prefix, source, fun, *args, **kwargs):
     source
     '''
     e = None
+    returncode = "Fail"
     try:
         (returncode, stdoutdata, stderrdata) = fun(*args, **kwargs)
     finally:
