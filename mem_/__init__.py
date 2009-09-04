@@ -46,6 +46,8 @@ class DepsStack(object):
 
     def call_finish(self):
         deps = self.deps.pop()
+        if len(self.deps) > 0:
+            self.deps[-1].extend(deps)
         return deps
 
     def add_dep(self, d):
@@ -53,6 +55,10 @@ class DepsStack(object):
 
     def add_deps(self, ds):
         self.deps[-1].extend(ds)
+
+    def add_deps_if_in_memoize(self, ds):
+        if len(self.deps) > 0:
+            self.add_deps(ds)
 
 
 class Mem(object):
@@ -230,6 +236,7 @@ class Mem(object):
 
                 restore(result)
 
+                self.deps_stack().add_deps_if_in_memoize(deps)
                 return result
             except IOError:
                 return self._run_task(taskf, args, kwargs, tchash)
