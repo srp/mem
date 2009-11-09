@@ -7,8 +7,6 @@ Mem: Designing a build system out of the Memoization of build steps
 
 
 
-PEAK6 CONFIDENTIAL
-
 
 //
 // External Links
