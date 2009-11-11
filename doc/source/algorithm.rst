@@ -5,14 +5,9 @@ Mem: Designing a build system out of the Memoization of build steps
 :Email:   sparish@peak6.com
 :Date:    2008-12-31
 
+.. highlight:: python
 
 
-
-//
-// External Links
-//
-:1: http://en.wikipedia.org/wiki/Memoization
-:2: http://scons.org/
 :3: http://www.artima.com/weblogs/viewpost.jsp?thread=241209
 :shelve: http://docs.python.org/library/shelve.html
 :pickle: http://docs.python.org/library/pickle.html
@@ -32,7 +27,7 @@ to build systems.
 Background on Memoization
 -------------------------
 
-{1}[Memoization] is an
+`Memoization <http://en.wikipedia.org/wiki/Memoization>`_ is an
 optimization technique which caches the result of a function by its
 input arguments, thus allowing future calls using identical arguments
 to immediately return the cached value instead of repeating the (most
@@ -51,7 +46,7 @@ obviously that of complicating the function.
 Properties needed for build
 ---------------------------
 
-{2}[SCons] and similar build systems have already
+`SCons <http://www.scons.org>`_ and similar build systems have already
 demonstrated that builds could be composed using function or method
 evaluation. Obviously to use memoization, we'll have to find a way to
 make these pure, or effectively pure. When viewed from linguistically,
@@ -71,44 +66,35 @@ The syntax
 ~~~~~~~~~~
 
 We'd prefer automatic memoization. Rather then designing a new
-language for {1}[build], we'll take a similar approach to SCons or
+language for builds, we'll take a similar approach to SCons or
 Waf, and use Python as a language for expressing the steps in
 builds. Python's decorators give a perfect mechanism to support
-automatic memoization, as we should be able to express something like:
+automatic memoization, as we should be able to express something like::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  @memoize
-  def obj(target, source, ...):
-      ...
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    @memoize
+    def obj(target, source, ...):
+        ...
 
-Which is syntactical sugar for:
+Which is syntactical sugar for::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  def obj(target, source, ...):
-      ...
-  obj = memoize(obj)
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def obj(target, source, ...):
+        ...
+    obj = memoize(obj)
 
-We can write memoize to look something like the following:
+We can write memoize to look something like the following::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  def memoize(origf):
-      def newf(*args, **kwargs):
-          # at this point we've captured the calling args and can
-          # hash them and check for a previous call
-          h = hash(origf, args, kwargs)
-          if (cache.has_key(h))
-              return cache[h]
-          else
-              r = origf(*args, **kwargs)
-              cache[h] = r
-              return r
-      return newf
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def memoize(origf):
+        def newf(*args, **kwargs):
+            # at this point we've captured the calling args and can
+            # hash them and check for a previous call
+            h = hash(origf, args, kwargs)
+            if (cache.has_key(h))
+                return cache[h]
+            else
+                r = origf(*args, **kwargs)
+                cache[h] = r
+                return r
+        return newf
 
 This defines and returns a new function that creates a closure around
 the old function. When called, it grabs the arguments, checks them for
@@ -136,14 +122,11 @@ hash). Thus we rule this option out.
 Instead we'll require that each function declare any input files that
 it uses. We can do this by passing the build function an extra
 parameter with such a method on it, thus such a build function could
-look like:
+look like::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  def obj(mem, target, source, ...):
-      mem.add_dep(source)
-      ...
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def obj(mem, target, source, ...):
+        mem.add_dep(source)
+        ...
 
 This is now going to complicate our memoize() function. When it goes
 to create the hash to store a result, it will need to grab the list of
@@ -154,27 +137,25 @@ can't compute the hash.
 
 A simple solution is to cache the list of dependencies. Thus the
 (simplified/pseudofied) algorithm for the memoization can be expressed
-as:
+as::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  # find cached dependencies (if any)
-  h1 = hash(origf, args, kwargs)
-  if not deps_cache.has_key(h1):
-      return run()
-  deps = deps_cache[h1]
+    # find cached dependencies (if any)
+    h1 = hash(origf, args, kwargs)
+    if not deps_cache.has_key(h1):
+        return run()
+    deps = deps_cache[h1]
+    
+    # find result (if any)
+    h2 = hash(origf, args, kwargs, [dep.hash() for dep in deps])
+    if not r_cache.has_key(h2):
+        return run()
+    
+    # restore result (if needed)
+    r = r_cache[h2]
+    if hasattr(r, restore):
+        r.restore()
+    return r
 
-  # find result (if any)
-  h2 = hash(origf, args, kwargs, [dep.hash() for dep in deps])
-  if not r_cache.has_key(h2):
-      return run()
-
-  # restore result (if needed)
-  r = r_cache[h2]
-  if hasattr(r, restore):
-      r.restore()
-  return r
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The first step uses all of the runtime available information to lookup
 the list of dependencies that was declared last time function was
@@ -183,17 +164,14 @@ dependencies (eg hashing the contents of dependant files), which is
 used to try to find the result. The final step is to restore (eg
 restore the contents of resulting files) and return the result.
 
-Finally, 'run()' might look something like:
+Finally, 'run()' might look something like::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  r = origf(*args, **kwargs)
-  r.store()
-  h2 = hash(origf, args, kwargs, [dep.hash() for dep in deps])
-  r_cache[h2] = r
-  h1 = hash(origf, args, kwargs)
-  deps_cache[h1] = deps
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    r = origf(*args, **kwargs)
+    r.store()
+    h2 = hash(origf, args, kwargs, [dep.hash() for dep in deps])
+    r_cache[h2] = r
+    h1 = hash(origf, args, kwargs)
+    deps_cache[h1] = deps
 
 Hashing and durability
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -213,57 +191,50 @@ kind of object that supported a hash() method, and that the results
 were some kind of objects that support a store() and restore(),
 method. Let's look at what a basic File class might look like to
 support both of these. As a simple way of caching large files, we'll
-use a git repo.
+use a git repo::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  class File:
-      def __init__(self, path):
-          self.path = path
+   class File:
+       def __init__(self, path):
+           self.path = path
 
-      #
-      # Methods used when acting as a dependency
-      #
+       #
+       # Methods used when acting as a dependency
+       #
 
-      def hash(self):
-          with open(self.path) as f:
-              return sha1(f.read()).hexdigest()
+       def hash(self):
+           with open(self.path) as f:
+               return sha1(f.read()).hexdigest()
 
-      #
-      # Methods used when acting as a result
-      #
+       #
+       # Methods used when acting as a result
+       #
 
-      def store(self):
-          self.git_hash = git.hash_object("-w", self.path).strip()
+       def store(self):
+           self.git_hash = git.hash_object("-w", self.path).strip()
 
-      def restore(self):
-          git.cat_file("blob", self.git_hash, stdout=open(self.path, "wb"))
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       def restore(self):
+           git.cat_file("blob", self.git_hash, stdout=open(self.path, "wb"))
+
 
 The reason we implement both of these in the same class is that
 results from one build function often end up being dependencies of
-another, consider:
+another, consider::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  hello_o = obj("hello.o", "hello.c", ...)
-  prog("hello", hello_o)
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    hello_o = obj("hello.o", "hello.c", ...)
+    prog("hello", hello_o)
+
 
 Environments
 ------------
 
 Environments do not have to be tied into the core of a build
 algorithm. For example, a dict() created by the user would almost
-suffice, eg:
+suffice, eg::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  env = {'CC': 'gcc',
-         'CFLAGS': '-Wall -O2'
-         ...}
-  hello_o = obj("hello.o", "hello.c", env)
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    env = {'CC': 'gcc',
+           'CFLAGS': '-Wall -O2'
+           ...}
+    hello_o = obj("hello.o", "hello.c", env)
 
 This almost works, but has two problems. First off, there's no
 tracking which parts of the environment each task used, so if
@@ -273,12 +244,9 @@ functions can not be pickled, so if any such functions are placed in
 the environment, an exception will be raised.
 
 There are several ways this could be approached. One could be to
-require the caller to explicitly pass individual arguments, eg:
+require the caller to explicitly pass individual arguments, eg::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  hello_o = obj("hello.o", "hello.c", CC=env['CC'], CFLAGS=env['CFLAGS'], ...)
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    hello_o = obj("hello.o", "hello.c", CC=env['CC'], CFLAGS=env['CFLAGS'], ...)
 
 This is obviously needlessly verbose and tedius for users; we could
 require that the task register these (much like how it registers
@@ -287,22 +255,16 @@ special-casing that the environment shouldn't get included in the
 hashing done with the rest of the arguments.
 
 We decide to go with the first option, but create a decorator,
-with_env(), to automate the environment expansion, allowing:
+with_env(), to automate the environment expansion, allowing::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  @with_env(CC="gcc", CFLAGS=[], ...)
-  @memoize
-  def obj(target, source, CC, CFLAGS):
-      ...
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    @with_env(CC="gcc", CFLAGS=[], ...)
+    @memoize
+    def obj(target, source, CC, CFLAGS):
+        ...
 
-with_env wraps the function so that the user can write code such as:
+with_env wraps the function so that the user can write code such as::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  hello_o = obj("hello.o", "hello.c", env=env)
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    hello_o = obj("hello.o", "hello.c", env=env)
 
 It then pulls out of the environment the values for keys specified on
 the decoration, or the default values if such isn't found in the

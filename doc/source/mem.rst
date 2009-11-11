@@ -46,34 +46,34 @@ To best understand the mem build system, we'll have to dive into the
 theory of memoization. Bear with us, it's really not complicated and
 we'll quickly be on our way to building stuff.
 
-[wikipedia, Memoization]
-________________________________________________________________________
-In computing, memoization is an optimization technique used primarily
-to speed up computer programs by having function calls avoid repeating
-the calculation of results for previously-processed inputs.
-________________________________________________________________________
+This quote is from wikipedia:
 
+   In computing, memoization is an optimization technique used primarily
+   to speed up computer programs by having function calls avoid repeating
+   the calculation of results for previously-processed inputs.
+ 
 A classic example of memoization is to allow writing a Fibonacci function
 using the mathematical definition, e.g.:
 
-------------------------------------------------------------------------
-         / 0 if n = 0
-F(n) = -{  1 if n = 1
-         \ F(n-1) + F(n-2)
-------------------------------------------------------------------------
+.. math::
 
-We could write this in Python as:
+   F(n) = \left\{
+   \begin{array}{l}
+      0\ \mathrm{if}\ n = 0 \\
+      1\ \mathrm{if}\ n = 1 \\ 
+      F(n-1) + F(n-2)
+   \end{array}
+   \right.
+   
+We could write this in Python as::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def fib(n):
-    if n == 0:
-        return 0
-    elif n == 1:
-        return 1
-    else:
-        return fib(n-1) + fib(n-2)
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   def fib(n):
+       if n == 0:
+           return 0
+       elif n == 1:
+           return 1
+       else:
+           return fib(n-1) + fib(n-2)
 
 The problem with this recursive definition is that 'fib(n-1)' and
 'fib(n-2)' for large values of 'n' go through most of the same
@@ -86,62 +86,54 @@ iteration). Sometimes this isn't desirable or possible.
 
 Memoization is a different solution. Rather then rewriting the
 solution to the equation, we introduce caching, which may look like
-this:
+this::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def fib(n, cache={}):
-    if n in cache:
-        return cache[n]
-    if n == 0:
-        return 0
-    elif n == 1:
-        return 1
-    else:
-	cache[n] = fib(n-1) + fib(n-2)
-        return cache[n]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   def fib(n, cache={}):
+       if n in cache:
+           return cache[n]
+       if n == 0:
+           return 0
+       elif n == 1:
+           return 1
+       else:
+       cache[n] = fib(n-1) + fib(n-2)
+       return cache[n]
 
 We could abstract the caching so that it doesn't pollute our business
-logic and so that we can reuse it:
+logic and so that we can reuse it::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-def memoize(f):
-    cache = {}
-    def wrapped_f(arg):
-    	if arg in cache:
-	    return cache
-	cache[arg] = f(arg)
-        return cache[arg]
-    return wrapped_f
+   def memoize(f):
+       cache = {}
+       def wrapped_f(arg):
+         if arg in cache:
+          return cache
+      cache[arg] = f(arg)
+           return cache[arg]
+       return wrapped_f
 
-def fib(n):
-    if n == 0:
-        return 0
-    elif n == 1:
-        return 1
-    else:
-        return fib(n-1) + fib(n-2)
+   def fib(n):
+       if n == 0:
+           return 0
+       elif n == 1:
+           return 1
+       else:
+           return fib(n-1) + fib(n-2)
 
-fib = memoize(fib)
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   fib = memoize(fib)
+
 
 And finally, rather then reassigning functions to memoize, we can use
-http://www.python.org/dev/peps/pep-0318/[@decorators] to mark which
-functions to memoize:
+`@decorators <http://www.python.org/dev/peps/pep-0318/>`_ to mark which
+functions to memoize::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@memoize
-def fib(n):
-    if n == 0:
-        return 0
-    elif n == 1:
-        return 1
-    else:
-        return fib(n-1) + fib(n-2)
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   @memoize
+   def fib(n):
+       if n == 0:
+           return 0
+       elif n == 1:
+           return 1
+       else:
+           return fib(n-1) + fib(n-2)
 
 
 Building on Memoization
@@ -155,34 +147,28 @@ memoization has to persist across build invocations, and it has to be
 able to account for external data (e.g. files).
 
 We already have enough information to write a simple build task for
-creating an object from a '.c' file:
+creating an object from a '.c' file::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-import mem
-import subprocess
-
-@mem.memoize
-def obj(target, source):
-    mem.add_dep(mem.nodes.File(source)) # declare external dependency
-    args = ["gcc", "-o", target, source]
-    print args                          # let the user know what's happending
-    subprocess.Popen(args, stdin = PIPE, stdout = PIPE)
-    return mem.nodes.File(target)
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+    import mem
+    import subprocess
+    
+    @mem.memoize
+    def obj(target, source):
+        mem.add_dep(mem.nodes.File(source)) # declare external dependency
+        args = ["gcc", "-o", target, source]
+        print args                          # let the user know what's happending
+        subprocess.Popen(args, stdin = PIPE, stdout = PIPE)
+        return mem.nodes.File(target)
+    
 We call our build function just like you would any other Python
-function:
+function::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-obj("hello.o", "hello.c")
+    obj("hello.o", "hello.c")
+    
+    for src in ["hi.c", "bye.c", "hiagain.c"]:
+       obj(src.replace(".c", ".o"), src)
 
-for src in ["hi.c", "bye.c", "hiagain.c"]:
-  obj(src.replace(".c", ".o"), src)
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-'@mem.memoize' works largely like the memoize we saw earlier in that
+'\@mem.memoize' works largely like the memoize we saw earlier in that
 it caches the result as a value on the key of the arguments that
 passed to the function. There's a few extra things added:
 
@@ -191,14 +177,11 @@ passed to the function. There's a few extra things added:
   (including sub-function calls). There's also 'mem.add_deps()' which
   takes a list.
 
-.Other external dependencies
-************************************************************************
-There's nothing special about 'mem.nodes.File()', mem is writen so that
-you can easily define your own types of external dependencies. For
-example, it would be easy to write an S3() external dependency that
-depended on objects in Amazon.com's S3 web-service. A database
-dependency might be another potential.
-************************************************************************
+  There's nothing special about 'mem.nodes.File()', mem is writen so that
+  you can easily define your own types of external dependencies. For
+  example, it would be easy to write an S3() external dependency that
+  depended on objects in Amazon.com's S3 web-service. A database
+  dependency might be another potential.
 
 * A memoized function can return any Python data type, who's value
   will be cached. If the return value is a 'File' (or a list of
@@ -214,16 +197,12 @@ Otherwise the above task is doing very straight-forward stuff:
 Again, there's absolutely no requirement that any of the arguments
 be external ('File') dependencies, nor that the result is an external
 dependency. Mem will just as happily memoize the following (or even
-the 'fib()' we wrote earlier):
+the 'fib()' we wrote earlier)::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-@mem.memoize
-def render_hello(name):
-    return "Hello, %s" % name
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
+    @mem.memoize
+    def render_hello(name):
+        return "Hello, %s" % name
+    
 Environmental Impacts
 ---------------------
 
@@ -232,23 +211,19 @@ it would be really nice if the 'obj()' function we wrote earlier would
 allow us to pass extra flags to the compiler.
 
 Naively we could create an environment out of a dictionary and just
-pass that into each build function:
+pass that into each build function (That is bad, don't do it. See below)::
 
-.Bad, avoid doing this!
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-import mem
-import subprocess
+   import mem
+   import subprocess
 
-@mem.memoize
-def obj(target, source, env={}):
-    mem.add_dep(mem.nodes.File(source)) # declare external dependency
-    cflags = env.get("CFLAGS", [])
-    args = ["gcc", "-o", target, source] + cflags
-    print args                          # let the user know what's happening
-    subprocess.Popen(args, stdin = PIPE, stdout = PIPE)
-    return mem.nodes.File(target)
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   @mem.memoize
+   def obj(target, source, env={}):
+       mem.add_dep(mem.nodes.File(source)) # declare external dependency
+       cflags = env.get("CFLAGS", [])
+       args = ["gcc", "-o", target, source] + cflags
+       print args                          # let the user know what's happening
+       subprocess.Popen(args, stdin = PIPE, stdout = PIPE)
+       return mem.nodes.File(target)
 
 That works, but isn't optimal because now if the environment key
 "SWIG_FLAGS" changes, all the 'obj()' calls will be re-ran, even
@@ -256,36 +231,32 @@ though they don't make use of that part of the environment.
 
 To avoid such problems, mem has defined another helpful decorator for
 dealing with environment variables:
-'@mem.util.with_env()'. 'with_env()' takes a list of environment keys
+'\@mem.util.with_env()'. 'with_env()' takes a list of environment keys
 (and defaults for if they are not found), pulls those keys out of the
 environment and passes only those to the memoized part of the
 function.
 
-Here's a better version of 'obj()' using 'with_env()':
+Here's a better version of 'obj()' using 'with_env()'::
 
-[python]
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-import mem
-import subprocess
+    import mem
+    import subprocess
+    
+    @mem.util.with_env(CFLAGS=[])         # only pass-in CFLAGS from the environment
+    @mem.memoize
+    def obj(target, source, CFLAGS):
+        mem.add_dep(mem.nodes.File(source)) # declare external dependency
+        args = ["gcc", "-o", target, source] + CFLAGS
+        print args                          # let the user know what's happending
+        subprocess.Popen(args, stdin = PIPE, stdout = PIPE)
+        return mem.nodes.File(target)
 
-@mem.util.with_env(CFLAGS=[])         # only pass-in CFLAGS from the environment
-@mem.memoize
-def obj(target, source, CFLAGS):
-    mem.add_dep(mem.nodes.File(source)) # declare external dependency
-    args = ["gcc", "-o", target, source] + CFLAGS
-    print args                          # let the user know what's happending
-    subprocess.Popen(args, stdin = PIPE, stdout = PIPE)
-    return mem.nodes.File(target)
-source~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 'mem.util.with_env' should always come before 'mem.memoize' or it
 won't have the full desired effect.
 
-************************************************************************
 There's nothing that ties 'mem.util.with_env' into 'mem.memoize'. They
 are useful together, but 'mem.util.with_env' can be just as useful
 alone.
-************************************************************************
 
 The 'Env' class
 ~~~~~~~~~~~~~~~
@@ -330,11 +301,11 @@ returns a wrapped module such that anytime you call a function on it:
 * restores env.cwd and the process's cwd
 
 The intent behind changing the directory is to make things like
-http://docs.python.org/library/glob.html#glob.glob more
+`glob <http://docs.python.org/library/glob.html#glob.glob>`_ more
 convenient for the user writing the script.
 
-.Build functions and CWD
-************************************************************************
+Build functions and CWD
+^^^^^^^^^^^^^^^^^^^^^^^
 Build functions generally print to the user any commands that are
 being run, so the user know where the build broke, or how its
 proceeding. As far as possible it's suggested that, build functions
@@ -344,8 +315,6 @@ print using absolute paths.
 The rational for doing so is that a user can then, from any directory,
 copy and paste an offending command without having to figure out what
 directory he has to be in to run it.
-************************************************************************
-
 
 Writing your own build functions
 --------------------------------
@@ -389,12 +358,14 @@ writing a new build function:
   full programming language in-tact; there's no excuse for using bad
   practices you wouldn't do in your normal programming.
 
-.Exceptions
-************************************************************************
+
+Exceptions
+~~~~~~~~~~
+
 When we said that "Mem leaves the full programming language in-tact",
 there's no better way to illustrate this then exceptions. You can
 raise and catch exceptions just like you normally would in python. This
 can be very useful, for example, you might still want to run your
 documentation generation and cscopes indexer even if the rest of the
 build fails.
-************************************************************************
+
