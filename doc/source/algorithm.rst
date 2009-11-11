@@ -8,10 +8,6 @@ Mem: Designing a build system out of the Memoization of build steps
 .. highlight:: python
 
 
-:3: http://www.artima.com/weblogs/viewpost.jsp?thread=241209
-:shelve: http://docs.python.org/library/shelve.html
-:pickle: http://docs.python.org/library/pickle.html
-
 Abstract
 --------
 
@@ -180,8 +176,9 @@ Python makes both of these fairly trivial. For hashing we'll either
 call a hash() method on each object (if supported), or fall back on
 using Python's pickle.
 
-For durability we'll use Python's {shelve}[shelve] module (which
-basically backs a dict() with a file using {pickle}[pickle])
+For durability we'll use Python's `shelve <http://docs.python.org/library/shelve.html>`_
+module (which
+basically backs a dict() with a file using `pickle <http://docs.python.org/library/pickle.html>`_.
 
 A File class
 ~~~~~~~~~~~~
