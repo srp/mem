@@ -37,6 +37,11 @@ class Test_LatexDependecyTracking(_PDFLatexTest): # {{{
         rv = self.c._find_potential_latex_deps(
             r"""$\alpha$ \include{hallo.latex}""")
         eq_(rv, ['hallo.latex'])
+    def test_include_notonsingle_line2(self):
+        rv = self.c._find_potential_latex_deps(
+            r"""\texttt{\input{MemfileRoot}}""")
+        eq_(rv, ['MemfileRoot.tex', 'MemfileRoot.ltx',
+                 'MemfileRoot.latex', 'MemfileRoot'])
 
     def test_ignorecomments(self):
         rv = self.c._find_potential_latex_deps(

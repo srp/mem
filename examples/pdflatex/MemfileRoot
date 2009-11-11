@@ -1,0 +1,5 @@
+import mem
+
+def build():
+    pdf = mem.tasks.pdflatex.pdflatex("sample.tex")
+

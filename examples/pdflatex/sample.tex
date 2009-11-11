@@ -1,0 +1,64 @@
+% File: explanation.latex
+%
+% Created by Holger Rapp on 2008-05-20.
+% HolgerRapp@gmx.net
+% 
+% This file is without warranty to correctness of
+% content. Free to use. Free to quote.
+
+\documentclass[]{article}
+
+% Use utf-8 encoding for foreign characters
+\usepackage[utf8]{inputenc}
+
+% Setup for fullpage use
+\usepackage{fullpage}
+
+% More symbols
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{A very short introduction to PDFLatex with mem}
+\author{Holger Rapp} 
+
+\date{11/11/09}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+To compile this document, just run mem in the current directory. 
+
+\section{Dependency tracking}
+\label{sub:dependency_tracking}
+
+Mem obviously gets it right if you change the Latex document. But is also gets
+it right when you \verb|\include{}| or \verb|\input{}| another file. Let's
+input the ultra short \verb|included_file.tex| in this directory: 
+
+\texttt{\input{included_file.tex}}
+
+Well, the layout is completely broken, but that's not the point here. We could
+fix it with proper texing.  Go ahead; try changing \verb|included_file.tex|.
+
+Mem also tracks dependencies for included graphics. But for nothing else at the
+moment.
+
+\section{One more thing} 
+\label{sec:one_more_thing}
+
+No tex document is complete without the Euler formula:
+
+\begin{equation}
+   e^{i \pi} + 1 = 0
+\end{equation}
+
+
+% section one_more_thing (end)
+% subsection dependency_tracking (end)
+
+
+\end{document}
+

@@ -14,13 +14,20 @@ import re
 # TODO: support for makeindex
 # TODO: support for graphicspath
 # TODO: support for includeonly
+# TODO: temporary files should be created in the temp directory. For this 
+#       to work, we had to copy all latex files into the dir and run the 
+#       commands there. That is because tex can't be told where to put temp files.
+
+# Nice reading for correct builds:
+# http://vim-latex.sourceforge.net/documentation/ 
+#   latex-suite/compiling-multiple.html
 
 class PDFLatexBuilder(object):
     _GRAPHIC_EXTENSIONS = [ '.pdf', '.eps', '.png', '.jpg', '.tif', '.bmp' ]
-    _LATEX_DEPS = re.compile(r'^[^%\r\n]*\\(?:input|include){(.*)}',
+    _LATEX_DEPS = re.compile(r'^[^%\r\n]*\\(?:input|include){(.*?)}',
             re.IGNORECASE | re.MULTILINE)
     _GRAPHIC_DEPS = re.compile(
-        r'^[^%\r\n]*\\(?:includegraphics)(?:\s*\[.*\]\s*)?{(.*)}',
+        r'^[^%\r\n]*\\(?:includegraphics)(?:\s*\[.*\]\s*)?{(.*?)}',
             re.IGNORECASE | re.MULTILINE
     )
 
@@ -33,6 +40,7 @@ class PDFLatexBuilder(object):
         code,stderr,stdout = mem.util.run_return_output_no_print(
             "PDFLATEX", source_list, _open_pipe_, args)
         if code is not 0:
+            print stderr
             mem.fail("PDFLatex failed!")
 
         return stderr, stdout
@@ -125,7 +133,8 @@ class PDFLatexBuilder(object):
         for d in self._deps:
             mem.add_dep(mem.util.convert_to_file(d))
 
-        args = mem.util.convert_cmd(['pdflatex', source])
+        args = mem.util.convert_cmd(['pdflatex', "-interaction=nonstopmode",
+                    source])
 
         target = self._check_target(source, target)
 
