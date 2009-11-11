@@ -20,18 +20,28 @@ class _PDFLatexTest(object):
 
 class Test_LatexDependecyTracking(_PDFLatexTest): # {{{
     def test_input_without_ext(self):
-        rv = self.c._find_potential_deps("""\input{hallo}""")
+        rv = self.c._find_potential_latex_deps("""\input{hallo}""")
         eq_(rv, ['hallo.tex', 'hallo.ltx', 'hallo.latex', 'hallo'])
     def test_input_with_ext(self):
-        rv = self.c._find_potential_deps("""\input{hallo.latex}""")
+        rv = self.c._find_potential_latex_deps("""\input{hallo.latex}""")
         eq_(rv, ['hallo.latex'])
 
     def test_include_without_ext(self):
-        rv = self.c._find_potential_deps("""\include{hallo}""")
+        rv = self.c._find_potential_latex_deps("""\include{hallo}""")
         eq_(rv, ['hallo.tex', 'hallo.ltx', 'hallo.latex', 'hallo'])
     def test_include_with_ext(self):
-        rv = self.c._find_potential_deps("""\include{hallo.latex}""")
+        rv = self.c._find_potential_latex_deps("""\include{hallo.latex}""")
         eq_(rv, ['hallo.latex'])
+
+    def test_include_notonsingle_line(self):
+        rv = self.c._find_potential_latex_deps(
+            r"""$\alpha$ \include{hallo.latex}""")
+        eq_(rv, ['hallo.latex'])
+
+    def test_ignorecomments(self):
+        rv = self.c._find_potential_latex_deps(
+            r"""$\alpha$ % \include{hallo.latex}""")
+        eq_(rv, [])
 
     def test_realworld_example(self):
         s = """
@@ -57,13 +67,14 @@ class Test_LatexDependecyTracking(_PDFLatexTest): # {{{
 \appendix{}
 
 %% Include this
-\input{Some_Appendix.tex}
+\input{Some_Appendix.tex} % A comment
 %% do not include this
-% \input{AnhangHerleitung.tex} % A comment
+% \input{do_not_include.tex} % A comment
 
 \end{document}
 """
-        rv = self.c._find_potential_deps(s)
+        rv = self.c._find_potential_latex_deps(s)
+        print "rv: %s" % (rv)
         eq_(rv.pop(0), 'header.tex')
         eq_(rv.pop(0), 'titlepage.tex')
         eq_(rv.pop(0), 'first_sec.tex')
@@ -82,6 +93,41 @@ class Test_LatexDependecyTracking(_PDFLatexTest): # {{{
 
         eq_(len(rv), 0)
 # }}}
+
+class Test_ImageDepdencyTracking(_PDFLatexTest):
+    def test_simple(self):
+        rv = self.c._find_potential_graphic_deps(
+            "\includegraphics{pics/picture.pdf}"
+        )
+        eq_(rv, ["pics/picture.pdf"])
+    def test_simple_with_options_no_whitespaces(self):
+        rv = self.c._find_potential_graphic_deps(
+            "\includegraphics[width=8cm]{pics/picture.pdf}"
+        )
+        eq_(rv, ["pics/picture.pdf"])
+    def test_simple_with_options_many_whitespaces(self):
+        rv = self.c._find_potential_graphic_deps(
+            "\includegraphics [width=8cm]  {pics/picture.pdf}"
+        )
+        eq_(rv, ["pics/picture.pdf"])
+
+    def test_no_extension(self):
+        rv = self.c._find_potential_graphic_deps(
+            "\includegraphics [width=8cm]{p}"
+        )
+        eq_(rv, ['p.pdf', 'p.eps', 'p.png', 'p.jpg', 'p.tif', 'p.bmp'])
+
+    def test_not_on_single_line(self):
+        rv = self.c._find_potential_graphic_deps(
+            "$beta$ \includegraphics [width=8cm]  {pics/picture.pdf}"
+        )
+        eq_(rv, ["pics/picture.pdf"])
+
+    def test_commented(self):
+        rv = self.c._find_potential_graphic_deps(
+            "$beta$ % \includegraphics [width=8cm]  {pics/picture.pdf}"
+        )
+        eq_(rv, [])
 
 class Test_ValidateTarget(_PDFLatexTest):
     def test_NoneTarget(self):

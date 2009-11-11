@@ -10,9 +10,19 @@ from mem_.util import _open_pipe_
 
 import re
 
+# TODO: support for bibtex
+# TODO: support for makeindex
+# TODO: support for graphicspath
+# TODO: support for includeonly
+
 class PDFLatexBuilder(object):
-    _LATEX_DEPS = re.compile(r'^\s*\\(?:input|include){(.*)}',
+    _GRAPHIC_EXTENSIONS = [ '.pdf', '.eps', '.png', '.jpg', '.tif', '.bmp' ]
+    _LATEX_DEPS = re.compile(r'^[^%\r\n]*\\(?:input|include){(.*)}',
             re.IGNORECASE | re.MULTILINE)
+    _GRAPHIC_DEPS = re.compile(
+        r'^[^%\r\n]*\\(?:includegraphics)(?:\s*\[.*\]\s*)?{(.*)}',
+            re.IGNORECASE | re.MULTILINE
+    )
 
     def __init__(self):
         # TODO: is this really needed? Can we not get mem to remember
@@ -31,8 +41,7 @@ class PDFLatexBuilder(object):
         if output.find("Rerun to get cross-references right") != -1:
             return True
 
-
-    def _find_potential_deps(self, s):
+    def _find_potential_latex_deps(self, s):
         """
         Parse the given string for input or include dependencies. Return
         a list of potential filenames to look for:
@@ -51,6 +60,38 @@ class PDFLatexBuilder(object):
 
         return rv
 
+    def _find_potential_graphic_deps(self, s):
+        """
+        See _find_potential_latex_deps docstring
+
+        This function completely ignores the graphicspath directive.
+        """
+        rv = []
+        for m in self._GRAPHIC_DEPS.findall(s):
+            if os.path.splitext(m)[1] is '':
+                rv.extend(m + ext for ext in self._GRAPHIC_EXTENSIONS)
+            else:
+                rv.append(m)
+
+        return rv
+
+    def _find_dependencies(self, s):
+        """
+        This function finds all (Tex) dependencies for this tex source file.
+        This are all files included or imported into the tex file;
+        the function recursively tracks all dependencies down.
+        """
+        # Search for graphic dependencies
+        for fname in self._find_potential_graphic_deps(s):
+            if os.path.exists(fname) and fname not in self._deps:
+                self._deps.append(fname)
+
+        # Find latex dependencies
+        for fname in self._find_potential_latex_deps(s):
+            if os.path.exists(fname) and fname not in self._deps:
+                self._deps.append(fname)
+                self._find_dependencies(open(fname,"r").read())
+
     def _validate_target(self, target):
         if os.path.splitext(target)[1].lower() != '.pdf':
             raise ValueError("%s is not a valid target for this builder"
@@ -68,16 +109,6 @@ class PDFLatexBuilder(object):
 
         return self._validate_target(target)
 
-    def _find_dependencies(self, s):
-        """
-        This function finds all (Tex) dependencies for this tex source file.
-        This are all files included or imported into the tex file;
-        the function recursively tracks all dependencies down.
-        """
-        for fname in self._find_potential_deps(s):
-            if os.path.exists(fname) and fname not in self._deps:
-                self._deps.append(fname)
-                self._find_dependencies(open(fname,"r").read())
 
     def build(self, mem, source, target=None, env=None,
               build_dir=None, **kwargs):
@@ -96,12 +127,13 @@ class PDFLatexBuilder(object):
 
         args = mem.util.convert_cmd(['pdflatex', source])
 
-        targer = self._check_target(source, target)
+        target = self._check_target(source, target)
 
         mem.util.ensure_file_dir(target)
 
+        # Finally, run PDFLatex
         while 1:
-            stderr, stdout = self._run_pdflatex(source_list, args)
+            stderr, stdout = self._run_pdflatex(source, args)
             if not self._need_rerun(stderr):
                 break
 
