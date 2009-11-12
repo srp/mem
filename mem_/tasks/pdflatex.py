@@ -152,5 +152,5 @@ class PDFLatexBuilder(object):
 def pdflatex(*args, **kwargs):
     builder = PDFLatexBuilder()
 
-    builder.build(mem, *args, **kwargs)
+    return builder.build(mem, *args, **kwargs)
 
