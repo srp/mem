@@ -97,10 +97,21 @@ class File(str):
 	    os.makedirs(self.dirname())
         if self.exists():
             self.unlink()
+
+        # Dirty check for writability
         with open(self, "wb") as f:
-            print "Restoring:", self
-            shutil.copy2(self._store_path(), self)
-            return self
+            pass
+
+        print "Restoring:", self
+        # Don't use copy2 here. We do not want to restore all metadata
+        # like create time and so on: the target is a *new* file only with
+        # the *old* content. This is for example handy for tools that check
+        # timestamps to see if a PDF has changed; we want to inform them.
+        #
+        # If sometimes copy2 should be used (I can't think of one, but there
+        # might be use cases in c development?) we should subclass this.
+        shutil.copy(self._store_path(), self)
+        return self
 
     def store(self):
         spath = self._store_path()
