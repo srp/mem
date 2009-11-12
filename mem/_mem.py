@@ -37,7 +37,6 @@ import util, nodes
 import threading
 
 
-
 MEM_DIR = ".mem"
 DEPS_DIR = "deps"
 RESULTS_DIR = "results"
@@ -80,6 +79,21 @@ class Singleton(object):
         return it
 
     @classmethod
+    def destroy(cls):
+        """
+        Delete this Singleton object, allowing a new Singleton to be created. 
+        This is useful in testing
+        """
+        del cls.__it__
+        cls.__it__ = None
+
+        # TODO: this shouldn't be done here; a redesign should 
+        # happen to replace Mem through a Build class or similar. This
+        # build class would also hold File caches (via a reflector class
+        # or similar). All those globals make me a bit sick.
+        nodes.File._hash_cache = {}
+
+    @classmethod
     def instance(cls):
         return cls.__it__
 
@@ -107,10 +121,6 @@ class Mem(Singleton):
     def concurrency(self, threads):
         if (threads > 0):
             self.thread_limit = threading.Semaphore(threads)
-
-    def import_memfile(self, f):
-        """this is mainly for the 'mem' script, don't call directly otherwise"""
-        return util.import_module(f, f)
 
 
     def subdir(self, *args, **kwargs):
@@ -225,36 +235,6 @@ class Mem(Singleton):
     def _results_path(self, rhash):
         return os.path.join(self.results_dir, rhash[:2], rhash[2:])
 
-    def memoize(self, taskf):
-        def f(*args, **kwargs):
-            tchash = self.get_hash(taskf.__name__, taskf.__module__,
-                                   args, kwargs)
-            try:
-                f = open(self._deps_path(tchash), "rb")
-                deps = pickle.load(f)
-                f.close()
-
-                f = open(self._results_path(self.get_hash(tchash, deps)), "rb")
-                result = pickle.load(f)
-                f.close()
-
-                def restore(o):
-                    if (hasattr(o, "restore")):
-                        o.restore()
-                    elif (hasattr(o, "__iter__")):
-                        for el in o:
-                            restore(el)
-
-                restore(result)
-
-                self.deps_stack().add_deps_if_in_memoize(deps)
-                return result
-            except IOError:
-                return self._run_task(taskf, args, kwargs, tchash)
-
-        f.__module__ = taskf.__module__
-        return f
-
     def _run_task(self, taskf, args, kwargs, tchash):
         self.deps_stack().call_start(self, taskf)
         result = taskf(*args, **kwargs)
@@ -286,9 +266,6 @@ class Mem(Singleton):
 
         return result
 
-def memoize(*args, **kwargs):
-    return Mem.instance().memoize(*args, **kwargs)
-
 def _find_root():
     d = os.path.abspath(os.curdir)
     while (not os.path.exists(os.path.join(d, "MemfileRoot"))):
@@ -303,7 +280,6 @@ def main():
     root = _find_root()
     os.chdir(root)
     mem = Mem(root)
-    print "Creating: singleton!: " 
     mfr_mod = mem.import_memfile("MemfileRoot")
     try:
         mfr_mod.build()

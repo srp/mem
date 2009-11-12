@@ -1,0 +1,3 @@
+This file contains functional tests. All have the nose attribs functional and
+slow, can therefore be excludede by running nostests -a '!slow'.
+

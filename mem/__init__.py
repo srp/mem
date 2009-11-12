@@ -24,8 +24,46 @@ import tasks, util, nodes
 
 from _mem import Mem
 
-def memoize(*args, **kwargs):
-    return Mem.instance().memoize(*args, **kwargs)
+import cPickle as pickle
+
+
+# TODO: this function uses private functions from mem, but 
+# must be outside of mem to be used as a decorator even before
+# the mem singleton was created.
+def memoize(taskf):
+    def f(*args, **kwargs):
+        mem = Mem.instance()
+        if mem is None:
+            raise RuntimeError("Mem Singleton has not yet been created")
+
+        tchash = mem.get_hash(taskf.__name__, taskf.__module__,
+                               args, kwargs)
+        try:
+            f = open(mem._deps_path(tchash), "rb")
+            deps = pickle.load(f)
+            f.close()
+
+            f = open(mem._results_path(mem.get_hash(tchash, deps)), "rb")
+            result = pickle.load(f)
+            f.close()
+
+            def restore(o):
+                if (hasattr(o, "restore")):
+                    o.restore()
+                elif (hasattr(o, "__iter__")):
+                    for el in o:
+                        restore(el)
+
+            restore(result)
+
+            mem.deps_stack().add_deps_if_in_memoize(deps)
+            return result
+        except IOError:
+            return mem._run_task(taskf, args, kwargs, tchash)
+
+    f.__module__ = taskf.__module__
+    return f
+
 
 def _find_root():
     d = os.path.abspath(os.curdir)
@@ -36,16 +74,22 @@ def _find_root():
         d = os.path.dirname(d)
     return d
 
-def main():
-    sys.path.append("./")
-    root = _find_root()
+# TODO: stupid name, rename this function!
+def do_build(root, build_callable):
     os.chdir(root)
     mem = Mem(root)
-    print "Creating: singleton!: " 
-    mfr_mod = mem.import_memfile("MemfileRoot")
     try:
-        mfr_mod.build()
+        build_callable()
     except KeyboardInterrupt:
         print "-" * 50
         print "build interrupted."
+
+def import_memfile(f):
+    return util.import_module(f, f)
+
+def main():
+    sys.path.append("./")
+    root = _find_root()
+    mfr_mod = import_memfile(root + os.path.sep + "MemfileRoot")
+    do_build(root, mfr_mod.build)
 
