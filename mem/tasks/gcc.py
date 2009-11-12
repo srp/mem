@@ -25,8 +25,9 @@ import sys
 from threading import Thread
 
 import mem
-
-File = mem.nodes.File
+from mem import nodes
+from mem import util
+from mem._mem import Mem
 
 def target_inc_flag(target, source_list):
     inc_target = False
@@ -52,50 +53,57 @@ def make_depends(target, source_list, CFLAGS, CPPPATH, inc_dirs):
 @mem.memoize
 def make_depends_single(target, source,
                         CFLAGS, includes, target_inc, inc_dirs):
-    mem.add_dep(mem.util.convert_to_file(source))
-    args = mem.util.convert_cmd(["gcc"] + CFLAGS +
+    mem = Mem.instance()
+    mem.add_dep(util.convert_to_file(source))
+    args = util.convert_cmd(["gcc"] + CFLAGS +
                                 includes +
                                 target_inc +
                                 inc_dirs +
                                 ["-M", "-o", "-", source])
-    return mem.util.make_depends("GCC depends", source, args)
+    return util.make_depends("GCC depends", source, args)
 
-@mem.util.with_env(CFLAGS=[], CPPPATH=[])
+@util.with_env(CFLAGS=[], CPPPATH=[])
 @mem.memoize
 def t_c_obj(target, source_list, CFLAGS, CPPPATH):
+    mem = Mem.instance()
+
     inc_dirs = set()
     if len(source_list) > 1:
         combine_opt=['-combine']
     else:
         combine_opt=[]
 
+    mem = Mem.instance()
+
     for source in source_list:
         inc_dirs.add("-I" + os.path.dirname(source))
         if not os.path.exists(str(source)):
             mem.fail("%s does not exist" % source)
 
-        mem.add_dep(mem.util.convert_to_file(source))
+        mem.add_dep(util.convert_to_file(source))
 
-    mem.add_deps([File(f) for f in
+    mem.add_deps([nodes.File(f) for f in
                   make_depends(target, source_list,
                                CFLAGS=CFLAGS, CPPPATH=CPPPATH,
                                inc_dirs=list(inc_dirs))])
     includes = ["-I" + path for path in CPPPATH]
-    args = mem.util.convert_cmd(["gcc"] +  CFLAGS + includes +
+    args = util.convert_cmd(["gcc"] +  CFLAGS + includes +
                                 target_inc_flag(target, source_list) +
                                 list(inc_dirs) +
                                 combine_opt +
                                 ["-c", "-o", target] + source_list)
-    mem.util.ensure_file_dir(target)
+    util.ensure_file_dir(target)
 
-    if mem.util.run("GCC", source_list, args) != 0:
+    if util.run("GCC", source_list, args) != 0:
         mem.fail()
 
-    return File(target)
+    return nodes.File(target)
 
-@mem.util.with_env(CXXFLAGS=[], CPPPATH=[])
+@util.with_env(CXXFLAGS=[], CPPPATH=[])
 @mem.memoize
 def t_cpp_obj(target, source_list, CXXFLAGS, CPPPATH):
+    mem = Mem.instance()
+
     inc_dirs = set()
     if len(source_list) > 1:
         combine_opt=['-combine']
@@ -107,54 +115,56 @@ def t_cpp_obj(target, source_list, CXXFLAGS, CPPPATH):
         if not os.path.exists(str(source)):
             mem.fail("%s does not exist" % source)
 
-            mem.add_dep(mem.util.convert_to_file(source))
+            mem.add_dep(util.convert_to_file(source))
 
-    mem.add_deps([File(f) for f in
+    mem.add_deps([nodes.File(f) for f in
                   make_depends(target, source_list,
                                CFLAGS=CXXFLAGS, CPPPATH=CPPPATH,
                                inc_dirs = list(inc_dirs))])
 
     includes = ["-I" + path for path in CPPPATH]
-    args = mem.util.convert_cmd(["g++"] +  CXXFLAGS + includes +
+    args = util.convert_cmd(["g++"] +  CXXFLAGS + includes +
                                 target_inc_flag(target, source_list) +
                                 list(inc_dirs) +
                                 combine_opt +
                                 ["-c", "-o", target] + source_list)
 
-    mem.util.ensure_file_dir(target)
+    util.ensure_file_dir(target)
 
-    if mem.util.run("Compiling", source_list, args) != 0:
+    if util.run("Compiling", source_list, args) != 0:
         mem.fail()
 
-    return File(target)
+    return nodes.File(target)
 
-@mem.util.with_env(CFLAGS=[], LIBS=[], LIBPATH=[], LINKFLAGS=[])
+@util.with_env(CFLAGS=[], LIBS=[], LIBPATH=[], LINKFLAGS=[])
 @mem.memoize
 def t_prog(target, objs, CFLAGS, LIBS, LIBPATH, LINKFLAGS):
+    mem = Mem.instance()
+
     mem.add_deps(objs)
 
     npaths = map(lambda a: "-L" + str(a), LIBPATH)
     nlibs = map(lambda a: "-l" + str(a), LIBS)
 
-    args = mem.util.convert_cmd(["gcc", "-o", target] + CFLAGS + LINKFLAGS +
+    args = util.convert_cmd(["gcc", "-o", target] + CFLAGS + LINKFLAGS +
                                 npaths + objs + nlibs)
 
-    mem.util.ensure_file_dir(target)
+    util.ensure_file_dir(target)
 
-    if mem.util.run("Linking", target, args) != 0:
+    if util.run("Linking", target, args) != 0:
         mem.fail()
 
-    return File(target)
+    return nodes.File(target)
 
 
 def build_obj(target, source, ext, env=None, **kwargs):
     if ext == ".c":
-        t = mem.util.Runable(t_c_obj, target, source, env=env, **kwargs)
+        t = util.Runable(t_c_obj, target, source, env=env, **kwargs)
         t.start()
         return t
 
     elif ext == ".cpp":
-        t = mem.util.Runable(t_cpp_obj, target, source, env=env, **kwargs)
+        t = util.Runable(t_cpp_obj, target, source, env=env, **kwargs)
         t.start()
         return t
     else:
@@ -166,13 +176,13 @@ def build_obj(target, source, ext, env=None, **kwargs):
 def obj(source_list, target=None, env=None, build_dir=None, **kwargs):
     """ Take a list of sources and convert them to a correct object file """
 
-    BuildDir = mem.util.get_build_dir(env, build_dir)
+    BuildDir = util.get_build_dir(env, build_dir)
     threads = []
 
     if not type(source_list) == list:
             source_list = [source_list]
 
-    nslist = mem.util.flatten(source_list)
+    nslist = util.flatten(source_list)
 
     # If a target is specified, build all the sources in the list into
     # a single target
@@ -210,16 +220,16 @@ def obj(source_list, target=None, env=None, build_dir=None, **kwargs):
 
 def prog(target, objs, env=None, build_dir = None, **kwargs):
     """ Convert the list of objects into a program given the cflags """
-    nobjs = mem.util.flatten(objs)
-    BuildDir = mem.util.get_build_dir(env, build_dir)
+    nobjs = util.flatten(objs)
+    BuildDir = util.get_build_dir(env, build_dir)
     ntarget = os.path.join(BuildDir, target)
     t_prog(ntarget, nobjs, env=env, **kwargs)
-    return File(ntarget)
+    return nodes.File(ntarget)
 
 def shared_obj(target, objs, env=None, build_dir = None, **kwargs):
     """ Convert the list of objects into a program given the cflags """
-    nobjs = mem.util.flatten(objs)
-    BuildDir = mem.util.get_build_dir(env, build_dir)
+    nobjs = util.flatten(objs)
+    BuildDir = util.get_build_dir(env, build_dir)
     ntarget = os.path.join(BuildDir, target)
 
     if 'CFLAGS' in kwargs:
@@ -232,4 +242,4 @@ def shared_obj(target, objs, env=None, build_dir = None, **kwargs):
 
     t_prog(ntarget, nobjs, env=env, CFLAGS=merged_CFLAGS, **kwargs)
 
-    return File(ntarget)
+    return nodes.File(ntarget)

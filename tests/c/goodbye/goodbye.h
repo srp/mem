@@ -1,2 +1,0 @@
-const char *
-goodbye(void);

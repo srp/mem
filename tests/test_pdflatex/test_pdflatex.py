@@ -2,60 +2,22 @@
 # encoding: utf-8
 
 import os
+import sys
 import shutil
-from hashlib import sha1
+
+sys.path.append(os.path.join(os.path.dirname(__file__), os.path.pardir))
 
 from nose.tools import *
 from nose.plugins.attrib import attr
 
-import mem
 from mem.tasks.pdflatex import pdflatex
+from util import FunctionalTest, FileHash
+import mem
 
-class FunctionalTest(object):
-    to_be_deleted = []
-    def setup(self):
-        self._cwd = os.getcwd()
-        self.root = os.path.dirname(__file__)
+class PDFLatexBuildsBase(FunctionalTest):
+    root = os.path.dirname(__file__)
 
-    def teardown(self):
-        self._delete_files()
-
-        os.chdir(self._cwd)
-
-        mem.Mem.destroy()
-
-    def _delete_files(self):
-        for f in self.created_files + self.to_be_deleted + [ '.mem' ]:
-            if not os.path.exists(f):
-                continue
-
-            if os.path.isdir(f):
-                shutil.rmtree(f)
-            else:
-                os.unlink(f)
-
-    def assert_all_files_exist(self):
-        for f in self.created_files:
-            ok_(os.path.exists(f), "File '%s' doesn't exist!" % f)
-
-class FileHash(object):
-    """
-    This class calculates a sha1 hash from a given file and can be asked
-    periodically, if the file has changed
-    """
-    def __init__(self, filename):
-        self._file = filename
-        self._hash = self._calc_hash()
-
-    @property
-    def changed(self):
-        h = self._calc_hash()
-        return h != self._hash
-
-    def _calc_hash(self):
-        return sha1(open(self._file,"rb").read()).hexdigest()
-
-class TestPDFLatexBuilds_Simple(FunctionalTest):
+class TestPDFLatexBuilds_Simple(PDFLatexBuildsBase):
     created_files = [ 'simple.aux', 'simple.pdf', 'simple.log' ]
     @attr("slow", "functional")
     def test(self):
@@ -66,7 +28,7 @@ class TestPDFLatexBuilds_Simple(FunctionalTest):
 
         self.assert_all_files_exist()
 
-class TestPDFLatexBuilds_BuildAndRestore(FunctionalTest):
+class TestPDFLatexBuilds_BuildAndRestore(PDFLatexBuildsBase):
     created_files = [ 'simple.aux', 'simple.pdf', 'simple.log' ]
     @attr("slow", "functional")
     def test(self):
@@ -87,7 +49,7 @@ class TestPDFLatexBuilds_BuildAndRestore(FunctionalTest):
 
         ok_(not h.changed)
 
-class TestPDFLatexBuilds_BuildChangeAndRebuild(FunctionalTest):
+class TestPDFLatexBuilds_BuildChangeAndRebuild(PDFLatexBuildsBase):
     created_files = [ 'simple_c.aux', 'simple_c.pdf', 'simple_c.log' ]
     to_be_deleted = [ "simple_c.tex" ]
 
@@ -112,7 +74,7 @@ class TestPDFLatexBuilds_BuildChangeAndRebuild(FunctionalTest):
 
         ok_(h.changed)
 
-class TestPDFLatexBuilds_BuildChangeIncludedAndRebuild(FunctionalTest):
+class TestPDFLatexBuilds_BuildChangeIncludedAndRebuild(PDFLatexBuildsBase):
     created_files = [ 'includer.aux', 'includer.pdf', 'includer.log' ]
     to_be_deleted = [ 'included.tex' ]
 
