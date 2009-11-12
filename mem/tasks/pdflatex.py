@@ -1,3 +1,4 @@
+
 import os
 import subprocess
 from subprocess import PIPE
@@ -5,8 +6,7 @@ import sys
 from threading import Thread
 
 import mem
-from mem_.nodes import File
-from mem_.util import _open_pipe_
+from mem._mem import Mem
 
 import re
 
@@ -38,10 +38,10 @@ class PDFLatexBuilder(object):
 
     def _run_pdflatex(self, source_list, args):
         code,stderr,stdout = mem.util.run_return_output_no_print(
-            "PDFLATEX", source_list, _open_pipe_, args)
+            "PDFLATEX", source_list, mem.util._open_pipe_, args)
         if code is not 0:
             print stderr
-            mem.fail("PDFLatex failed!")
+            Mem.instance().fail("PDFLatex failed!")
 
         return stderr, stdout
 
@@ -122,16 +122,16 @@ class PDFLatexBuilder(object):
               build_dir=None, **kwargs):
         BuildDir = mem.util.get_build_dir(env, build_dir)
 
-        if not isinstance(source, (str,File)):
+        if not isinstance(source, (str,mem.nodes.File)):
             # TODO: or should this be a mem.fail
             raise RuntimeError("Only takes a single source tex file!")
 
-        mem.add_dep(mem.util.convert_to_file(source))
+        Mem.instance().add_dep(mem.util.convert_to_file(source))
         self._find_dependencies(open(source, "r").read())
 
         # Add all the recursively found dependencies
         for d in self._deps:
-            mem.add_dep(mem.util.convert_to_file(d))
+            Mem.instance().add_dep(mem.util.convert_to_file(d))
 
         args = mem.util.convert_cmd(['pdflatex', "-interaction=nonstopmode",
                     source])
@@ -146,7 +146,7 @@ class PDFLatexBuilder(object):
             if not self._need_rerun(stderr):
                 break
 
-        return File(target)
+        return mem.nodes.File(target)
 
 @mem.memoize
 def pdflatex(*args, **kwargs):

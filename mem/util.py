@@ -26,6 +26,9 @@ from threading import Thread, Semaphore
 import subprocess
 import re
 
+from nodes import File
+from _mem import Mem 
+
 RED    = chr(27) + "[31m"
 GREEN  = chr(27) + "[32m"
 YELLOW = chr(27) + "[33m"
@@ -96,8 +99,7 @@ def make_depends(prefix, source, args):
     sys.stdout.write(_mark_output_(stderrdata))
 
     if returncode != 0:
-        import mem
-        mem.fail()
+        Mem.instance().fail()
 
     deps = deps[1:] # first element is the target (eg ".c"), drop it
     return [dep for dep in deps if dep != '\\']
@@ -157,8 +159,7 @@ def run_return_output(prefix, source, fun, *args):
     sys.stdout.write(_mark_output_(stdoutdata))
     sys.stdout.write(_mark_output_(stderrdata))
     if returncode != 0:
-        import mem
-        mem.fail()
+        Mem.instance().fail()
 
     return (returncode, stdoutdata, stderrdata)
 
@@ -174,7 +175,7 @@ def run(prefix, source, args, shell=False):
 
 def get_build_dir(env, arg_func):
     """ return a valid build directory given the environment """
-    import mem
+    mem = Mem.instance()
 
     if arg_func and type(arg_func) == str:
         return arg_func
@@ -231,7 +232,6 @@ def flatten(l, ltypes=(list, tuple)):
 
 def convert_to_files(src_list):
     """ Convert a list of mixed strings/files to files """
-    from mem_.nodes import File
     nlist = []
     for src in src_list:
         if isinstance(src, File):
@@ -241,7 +241,6 @@ def convert_to_files(src_list):
     return nlist
 
 def convert_to_file(src):
-    from mem_.nodes import File
     if isinstance(src, File):
         return src
     else:
@@ -316,7 +315,8 @@ class Runable(Thread):
         self.kwargs = kwargs
 
     def run(self):
-        import mem
+        mem = Mem.instance()
+
         if not mem.thread_limit == None:
             mem.thread_limit.acquire()
 
@@ -329,7 +329,7 @@ class Runable(Thread):
             mem.thread_limit.release()
 
     def join(self):
-        import mem
+        mem = Mem.instance()
 
         if mem.failed:
             sys.exit(1)

@@ -6,10 +6,9 @@ from nose.tools import *
 import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), os.path.pardir))
 
-import mem_
-sys.modules.setdefault('mem', mem_.Mem(".."))
+import mem._mem
+mem = mem._mem.Mem("")
 import mem
-mem.__setup__()
 
 from pdflatex import PDFLatexBuilder
 

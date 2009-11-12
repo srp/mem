@@ -18,6 +18,12 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import tasks
+
+import os
+import sys
+
+
 import cPickle as pickle
 from cpu_count import cpu_count
 import hashlib
@@ -26,9 +32,11 @@ import os
 import sys
 import types
 
-import util
+import util, nodes
 
 import threading
+
+
 
 MEM_DIR = ".mem"
 DEPS_DIR = "deps"
@@ -40,7 +48,7 @@ class DepsStack(object):
         self.deps = []
 
     def call_start(self, mem, f):
-        deps = [mem.nodes.File(sys.modules[f.__module__].__file__)]
+        deps = [nodes.File(sys.modules[f.__module__].__file__)]
 
         self.deps.append(deps)
 
@@ -60,8 +68,25 @@ class DepsStack(object):
         if len(self.deps) > 0:
             self.add_deps(ds)
 
+class Singleton(object):
+    """Singleton Pattern, straightforward implementation"""
 
-class Mem(object):
+    def __new__(cls, *args, **kwds):
+        it = cls.__dict__.get("__it__")
+        if it is not None:
+            raise RuntimeError, "Singleton was instantiated twice. This is bug."
+        cls.__it__ = it = object.__new__(cls)
+        it.init(*args, **kwds)
+        return it
+
+    @classmethod
+    def instance(cls):
+        return cls.__it__
+
+    def init(self, *args, **kwds):
+        pass
+
+class Mem(Singleton):
     def __init__(self, root):
         self.root = root
         self.cwd = root
@@ -77,20 +102,6 @@ class Mem(object):
         self.thread_limit = threading.Semaphore(cpu_count() * 2)
         self.local = threading.local()
 
-    def __setup__(self):
-        import mem_.nodes
-        self.nodes = mem_.nodes
-
-        import mem_.util
-        self.util = mem_.util
-
-        mem_dir = os.path.dirname(sys.modules[self.__module__].__file__)
-        for f in os.listdir(os.path.join(mem_dir, "tasks")):
-            if not f.endswith(".py"):
-                continue
-            __import__("mem_.tasks." + f[:-2])
-
-        self.tasks = mem_.tasks
         self.failed = False
 
     def concurrency(self, threads):
@@ -196,7 +207,7 @@ class Mem(object):
                          objs.__module__,
                          self.nodes.File(
                             sys.modules[objs.__module__].__file__).get_hash()))
-            elif isinstance(objs, self.util.AutoHashable):
+            elif isinstance(objs, util.AutoHashable):
                 return "\5" + "\0".join([gh(getattr(objs, a))
                                          for a in dir(objs)
                                          if not a.startswith("__")])
@@ -262,16 +273,41 @@ class Mem(object):
         store(result)
 
         fp = self._deps_path(tchash)
-        self.util.ensure_file_dir(fp)
+        util.ensure_file_dir(fp)
         f = open(fp, "wb")
         pickle.dump(deps, f)
         f.close()
 
         fp = self._results_path(self.get_hash(tchash, deps))
-        self.util.ensure_file_dir(fp)
+        util.ensure_file_dir(fp)
         f = open(fp, "wb")
         pickle.dump(result, f)
         f.close()
 
         return result
+
+def memoize(*args, **kwargs):
+    return Mem.instance().memoize(*args, **kwargs)
+
+def _find_root():
+    d = os.path.abspath(os.curdir)
+    while (not os.path.exists(os.path.join(d, "MemfileRoot"))):
+        if d == "/":
+            sys.stderr.write("No 'MemfileRoot' found!\n")
+            sys.exit(1)
+        d = os.path.dirname(d)
+    return d
+
+def main():
+    sys.path.append("./")
+    root = _find_root()
+    os.chdir(root)
+    mem = Mem(root)
+    print "Creating: singleton!: " 
+    mfr_mod = mem.import_memfile("MemfileRoot")
+    try:
+        mfr_mod.build()
+    except KeyboardInterrupt:
+        print "-" * 50
+        print "build interrupted."
 

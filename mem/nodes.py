@@ -19,7 +19,11 @@
 # SOFTWARE.
 
 from __future__ import with_statement
-import mem
+
+from _mem import Mem
+import util
+
+
 import hashlib
 import os
 import cPickle as pickle
@@ -41,8 +45,8 @@ class File(str):
 
     def __new__(self, file, *args, **kwargs):
 	import mem
-        path = os.path.join(mem.cwd, file)
-	if mem.failed:
+        path = os.path.join(Mem.instance().cwd, file)
+	if Mem.instance().failed:
 		sys.exit(1)
         if not os.path.exists(path):
             raise NodeError("%s does not exist!" % path)
@@ -84,7 +88,7 @@ class File(str):
 
     def _store_path(self):
         h = self._hash
-        return os.path.join(mem.blob_dir, h[:2], h[2:])
+        return os.path.join(Mem.instance().blob_dir, h[:2], h[2:])
 
     def restore(self):
         if not self.exists():
@@ -115,7 +119,7 @@ class File(str):
 
     def store(self):
         spath = self._store_path()
-        mem.util.ensure_file_dir(spath)
+        util.ensure_file_dir(spath)
         if os.path.exists(self._store_path()):
             return
         shutil.copy2(self, spath)

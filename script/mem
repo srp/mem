@@ -1,29 +1,8 @@
 #!/usr/bin/env python
 
-import os
-import mem_
-import sys
-
-def find_root():
-    d = os.path.abspath(os.curdir)
-    while (not os.path.exists(os.path.join(d, "MemfileRoot"))):
-        if d == "/":
-            sys.stderr.write("No 'MemfileRoot' found!\n")
-            sys.exit(1)
-        d = os.path.dirname(d)
-    return d
+from mem import main
 
 if __name__ == '__main__':
-    sys.path.append("./")
-    root = find_root()
-    os.chdir(root)
-    sys.modules.setdefault('mem', mem_.Mem(root))
-    import mem
-    mem.__setup__()
+    main()
 
-    mfr_mod = mem.import_memfile("MemfileRoot")
-    try:
-        mfr_mod.build()
-    except KeyboardInterrupt:
-        print "-" * 50
-        print "build interrupted."
+
