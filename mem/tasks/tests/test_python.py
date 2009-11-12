@@ -13,7 +13,7 @@ from python import CythonBuilder
 
 class _CythonTest(object):
     def setUp(self):
-        self.c = CythonBuilder()
+        self.c = CythonBuilder([])
 
 
 class Test_CythonDependencyTracking(_CythonTest): # {{{
@@ -22,18 +22,36 @@ class Test_CythonDependencyTracking(_CythonTest): # {{{
 
         ok_("blub.pxd" in self.c.deps)
         eq_(len(self.c.deps), 1)
+    def test_simple_from_submodul(self):
+        self.c._find_deps("""from geometry.objects cimport hi""")
+
+        ok_("geometry/objects.pxd" in self.c.deps)
+        eq_(len(self.c.deps), 1)
 
     def test_simple_cimport(self):
         self.c._find_deps("""cimport hallo""")
 
         ok_("hallo.pxd" in self.c.deps)
         eq_(len(self.c.deps), 1)
+    
+    def test_simple_cimport_from_submodule(self):
+        self.c._find_deps("""cimport hallo.welt""")
+
+        ok_("hallo/welt.pxd" in self.c.deps)
+        eq_(len(self.c.deps), 1)
+
     def test_multiple_cimport(self):
         self.c._find_deps("""cimport hallo, sunshine""")
 
         ok_("hallo.pxd" in self.c.deps)
         ok_("sunshine.pxd" in self.c.deps)
         eq_(len(self.c.deps), 2)
+    def test_cimport_with_as(self):
+        self.c._find_deps("""cimport hallo as h""")
+
+        ok_("hallo.pxd" in self.c.deps)
+        eq_(len(self.c.deps), 1)
+
 
     def test_simple_include(self):
         self.c._find_deps('include "hello.pxi"')

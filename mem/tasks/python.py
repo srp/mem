@@ -82,13 +82,24 @@ class CythonBuilder(object):
     _DEP_REG_CHEADER = \
         re.compile(r'^ *(?:cdef[ ]*extern[ ]*from *[\'"]([^\'"]+)[\'"])', re.M)
 
-    def __init__(self):
+    def __init__(self, include_paths):
         self.deps = set()
+        self.include_paths = include_paths
 
     def _find_deps(self, s):
         self._find_deps_pxd(s)
         self._find_deps_cheader(s)
         self._find_deps_direct(s)
+
+    @staticmethod
+    def _normalize_module_name(s):
+        # Remove as blah at the end
+        s = s.split(" as ")[0].strip()
+
+        # Replace all dots except a path seperator
+        s = s.replace('.', os.path.sep)
+
+        return s
 
     def _find_deps_pxd(self, s):
         temp = util.flatten([m.findall(s) for m in self._DEP_REGS_PXD])
@@ -96,27 +107,31 @@ class CythonBuilder(object):
             [ [ s.strip() for s in m.split(',') ] for m in temp] )
 
         for dep in all_matches:
+            dep = self._normalize_module_name(dep)
             dep += '.pxd'
             if dep not in self.deps:
                 # Recurse, if file exists. If not, the file might be global
                 # (which we currently do not track) or the file
                 # might not exist, which is not our problem, but cythons
-                if os.path.exists(dep):
-                    self._find_deps(open(dep,"r").read())
-                self.deps.add(dep)
+                for path in self.include_paths + ['']:
+                    filename = os.path.relpath(os.path.join(path, dep))
+                    if os.path.exists(filename):
+                        self._find_deps(open(filename,"r").read())
+                    self.deps.add(filename)
 
     def _find_deps_direct(self, s):
         all_matches = self._DEP_REG_DIRECT.findall(s)
 
         for dep in all_matches:
-            print "dep: %s" % (dep)
             if dep not in self.deps:
                 # Recurse, if file exists. If not, the file might be global
                 # (which we currently do not track) or the file
                 # might not exist, which is not our problem, but cythons
-                if os.path.exists(dep):
-                    self._find_deps(open(dep,"r").read())
-                self.deps.add(dep)
+                for path in self.include_paths + ['']:
+                    filename = os.path.relpath(os.path.join(path, dep))
+                    if os.path.exists(filename):
+                        self._find_deps(open(filename,"r").read())
+                    self.deps.add(filename)
 
     def _find_deps_cheader(self, s):
         all_matches = self._DEP_REG_CHEADER.findall(s)
@@ -138,13 +153,16 @@ class CythonBuilder(object):
         pxd = os.path.splitext(source)[0] + '.pxd'
         if os.path.exists(pxd):
             self.deps.add(pxd)
+            self._find_deps(open(pxd, "r").read())
 
         self._find_deps(open(source,"r").read())
+        self.deps = [ d for d in self.deps if os.path.exists(d) ]
 
         mem = Mem.instance()
-        mem.add_deps([ nodes.File(f) for f in self.deps])
+        mem.add_deps([ nodes.File(f) for f in self.deps ])
 
         args = util.convert_cmd(["cython"] +
+                ['-I' + path for path in self.include_paths ] +
                 ["-o", cfile, source])
 
         if util.run("Cython", source, args) != 0:
@@ -152,9 +170,10 @@ class CythonBuilder(object):
 
         return nodes.File(cfile)
 
+@util.with_env(CYTHON_INCLUDE=[])
 @mem.memoize
-def _run_cython(cfile, source):
-    b = CythonBuilder()
+def _run_cython(cfile, source, CYTHON_INCLUDE):
+    b = CythonBuilder(CYTHON_INCLUDE)
 
     return b.build(cfile, source)
 
@@ -178,7 +197,9 @@ def _python_cython(source, env, build_dir, **kwargs):
         raise RuntimeError("Cython is not installed!")
 
     base_target = build_dir + os.path.splitext(source)[0]
-    cfile = _run_cython(base_target + '.c', source)
+    cfile = _run_cython(base_target + '.c', source, 
+        env.get("CYTHON_INCLUDE", [])
+    )
 
     return _build_python_obj(base_target + '.o', cfile,
             env.get("CFLAGS", []),
@@ -190,7 +211,7 @@ _EXTENSION_DISPATCH = {
     '.pyx': _python_cython,
 }
 
-def python_ext(target, sources, env=None, build_dir = "", **kwargs):
+def python_ext(target, sources, env={}, build_dir = "", **kwargs):
     """Turn the sources list into a python extension"""
 
     if not isinstance(sources, list):
@@ -218,16 +239,12 @@ def python_ext(target, sources, env=None, build_dir = "", **kwargs):
     if 'CFLAGS' in kwargs:
         CFLAGS = kwargs['CFLAGS'][:]
     elif env is not None:
-        CFLAGS = env.CFLAGS[:]
-    else:
-        CFLAGS = []
+        CFLAGS = env.get('CFLAGS', [])
 
     if 'LDFLAGS' in kwargs:
         LDFLAGS = kwargs['LDFLAGS'][:]
     elif env is not None:
-        LDFLAGS = env.LDFLAGS[:]
-    else:
-        LDFLAGS = []
+        LDFLAGS = env.get('LDFLAGS', [])
 
     return _link_python_ext(ntarget, all_objs, CFLAGS, LDFLAGS)
 
