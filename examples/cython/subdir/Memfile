@@ -1,0 +1,6 @@
+from mem.tasks.python import python_ext
+
+def build(env):
+    python_ext("printer", "printer.pyx", env=env, inplace=True)
+
+

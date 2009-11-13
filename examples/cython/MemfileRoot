@@ -1,0 +1,21 @@
+from mem._mem import Mem
+from mem.util import Env
+
+import os
+
+from mem.tasks.python import python_ext
+
+def build():
+    env = Env(
+        BUILD_DIR = "build",
+        CYTHON_INCLUDE = [
+            os.getcwd()
+        ],
+    )
+
+    mem = Mem.instance()
+    mem.subdir("subdir").build(env)
+
+    python_ext("hello", "hello.pyx", env=env, inplace=True)
+
+
