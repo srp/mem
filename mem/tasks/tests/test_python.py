@@ -33,7 +33,7 @@ class Test_CythonDependencyTracking(_CythonTest): # {{{
 
         ok_("hallo.pxd" in self.c.deps)
         eq_(len(self.c.deps), 1)
-    
+
     def test_simple_cimport_from_submodule(self):
         self.c._find_deps("""cimport hallo.welt""")
 

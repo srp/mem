@@ -184,7 +184,7 @@ def _python_obj(source, env, build_dir, **kwargs):
     if not os.path.exists(str(source)):
         Mem.instance().fail("%s does not exist" % source)
 
-    target = build_dir + os.path.splitext(source)[0] + '.o'
+    target = os.path.join(build_dir, os.path.splitext(source)[0] + '.o')
 
     return _build_python_obj(target, source,
             env.get("CFLAGS", []),
@@ -196,7 +196,7 @@ def _python_cython(source, env, build_dir, **kwargs):
     if not _has_cython:
         raise RuntimeError("Cython is not installed!")
 
-    base_target = build_dir + os.path.splitext(source)[0]
+    base_target = os.path.join(build_dir, os.path.splitext(source)[0])
     cfile = _run_cython(base_target + '.c', source, 
         env.get("CYTHON_INCLUDE", [])
     )
@@ -211,7 +211,8 @@ _EXTENSION_DISPATCH = {
     '.pyx': _python_cython,
 }
 
-def python_ext(target, sources, env={}, build_dir = "", **kwargs):
+def python_ext(target, sources, env={}, build_dir = "", inplace = False,
+               **kwargs):
     """Turn the sources list into a python extension"""
 
     if not isinstance(sources, list):
@@ -232,8 +233,11 @@ def python_ext(target, sources, env={}, build_dir = "", **kwargs):
 
     target += '.so'
 
-    build_dir = util.get_build_dir(env, build_dir)
-    ntarget = os.path.join(build_dir, target)
+    if not inplace:
+        build_dir = util.get_build_dir(env, build_dir)
+        ntarget = os.path.join(build_dir, target)
+    else:
+        ntarget = target
 
 
     if 'CFLAGS' in kwargs:
