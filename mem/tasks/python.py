@@ -197,7 +197,8 @@ def _python_cython(source, env, build_dir, **kwargs):
         raise RuntimeError("Cython is not installed!")
 
     base_target = os.path.join(build_dir, os.path.splitext(source)[0])
-    cfile = _run_cython(base_target + '.c', source, 
+
+    cfile = _run_cython(base_target + '.c', source,
         env.get("CYTHON_INCLUDE", [])
     )
 
@@ -220,6 +221,8 @@ def python_ext(target, sources, env={}, build_dir = "", inplace = False,
 
     mem = Mem.instance()
 
+    build_dir = util.get_build_dir(env, build_dir)
+
     all_objs = []
     for source in util.flatten(sources):
         ext = os.path.splitext(source)[1].lower()
@@ -234,7 +237,6 @@ def python_ext(target, sources, env={}, build_dir = "", inplace = False,
     target += '.so'
 
     if not inplace:
-        build_dir = util.get_build_dir(env, build_dir)
         ntarget = os.path.join(build_dir, target)
     else:
         ntarget = target
