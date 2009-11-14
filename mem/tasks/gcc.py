@@ -27,7 +27,6 @@ from threading import Thread
 import mem
 from mem import nodes
 from mem import util
-from mem._mem import Mem
 
 def target_inc_flag(target, source_list):
     inc_target = False
@@ -53,7 +52,6 @@ def make_depends(target, source_list, CFLAGS, CPPPATH, inc_dirs):
 @mem.memoize
 def make_depends_single(target, source,
                         CFLAGS, includes, target_inc, inc_dirs):
-    mem = Mem.instance()
     mem.add_dep(util.convert_to_file(source))
     args = util.convert_cmd(["gcc"] + CFLAGS +
                                 includes +
@@ -65,15 +63,11 @@ def make_depends_single(target, source,
 @util.with_env(CFLAGS=[], CPPPATH=[])
 @mem.memoize
 def t_c_obj(target, source_list, CFLAGS, CPPPATH):
-    mem = Mem.instance()
-
     inc_dirs = set()
     if len(source_list) > 1:
         combine_opt=['-combine']
     else:
         combine_opt=[]
-
-    mem = Mem.instance()
 
     for source in source_list:
         inc_dirs.add("-I" + os.path.dirname(source))
@@ -102,8 +96,6 @@ def t_c_obj(target, source_list, CFLAGS, CPPPATH):
 @util.with_env(CXXFLAGS=[], CPPPATH=[])
 @mem.memoize
 def t_cpp_obj(target, source_list, CXXFLAGS, CPPPATH):
-    mem = Mem.instance()
-
     inc_dirs = set()
     if len(source_list) > 1:
         combine_opt=['-combine']
@@ -139,8 +131,6 @@ def t_cpp_obj(target, source_list, CXXFLAGS, CPPPATH):
 @util.with_env(CFLAGS=[], LIBS=[], LIBPATH=[], LINKFLAGS=[])
 @mem.memoize
 def t_prog(target, objs, CFLAGS, LIBS, LIBPATH, LINKFLAGS):
-    mem = Mem.instance()
-
     mem.add_deps(objs)
 
     npaths = map(lambda a: "-L" + str(a), LIBPATH)

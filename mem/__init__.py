@@ -27,6 +27,18 @@ from _mem import Mem
 import cPickle as pickle
 
 
+def add_dep(d):
+    Mem.instance().add_dep(d)
+
+
+def add_deps(ds):
+    Mem.instance().add_deps(ds)
+
+
+def fail(*args, **kwargs):
+    Mem.instance().fail(*args, **kwargs)
+
+
 # TODO: this function uses private functions from mem, but
 # must be outside of mem to be used as a decorator even before
 # the mem singleton was created.
@@ -63,6 +75,10 @@ def memoize(taskf):
 
     f.__module__ = taskf.__module__
     return f
+
+
+def subdir(*args, **kwargs):
+    Mem.instance().subdir(*args, **kwargs)
 
 
 def _find_root():

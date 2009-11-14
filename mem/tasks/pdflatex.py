@@ -6,7 +6,6 @@ import sys
 from threading import Thread
 
 import mem
-from mem._mem import Mem
 
 import re
 
@@ -41,7 +40,7 @@ class PDFLatexBuilder(object):
             "PDFLATEX", source_list, mem.util._open_pipe_, args)
         if code is not 0:
             print stderr
-            Mem.instance().fail("PDFLatex failed!")
+            mem.fail("PDFLatex failed!")
 
         return stderr, stdout
 
@@ -126,12 +125,12 @@ class PDFLatexBuilder(object):
             # TODO: or should this be a mem.fail
             raise RuntimeError("Only takes a single source tex file!")
 
-        Mem.instance().add_dep(mem.util.convert_to_file(source))
+        mem.add_dep(mem.util.convert_to_file(source))
         self._find_dependencies(open(source, "r").read())
 
         # Add all the recursively found dependencies
         for d in self._deps:
-            Mem.instance().add_dep(mem.util.convert_to_file(d))
+            mem.add_dep(mem.util.convert_to_file(d))
 
         args = mem.util.convert_cmd(['pdflatex', "-interaction=nonstopmode",
                     source])
