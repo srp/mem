@@ -27,7 +27,7 @@ from _mem import Mem
 import cPickle as pickle
 
 
-# TODO: this function uses private functions from mem, but 
+# TODO: this function uses private functions from mem, but
 # must be outside of mem to be used as a decorator even before
 # the mem singleton was created.
 def memoize(taskf):

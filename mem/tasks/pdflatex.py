@@ -14,12 +14,12 @@ import re
 # TODO: support for makeindex
 # TODO: support for graphicspath
 # TODO: support for includeonly
-# TODO: temporary files should be created in the temp directory. For this 
-#       to work, we had to copy all latex files into the dir and run the 
+# TODO: temporary files should be created in the temp directory. For this
+#       to work, we had to copy all latex files into the dir and run the
 #       commands there. That is because tex can't be told where to put temp files.
 
 # Nice reading for correct builds:
-# http://vim-latex.sourceforge.net/documentation/ 
+# http://vim-latex.sourceforge.net/documentation/
 #   latex-suite/compiling-multiple.html
 
 class PDFLatexBuilder(object):
