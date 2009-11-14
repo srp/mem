@@ -2,5 +2,6 @@
 *.o
 *.pyc
 build/*
+doc/build/*
 .mem
 .*.swp
