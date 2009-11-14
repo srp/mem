@@ -88,9 +88,9 @@ We can write memoize to look something like the following::
             # at this point we've captured the calling args and can
             # hash them and check for a previous call
             h = hash(origf, args, kwargs)
-            if (cache.has_key(h))
+            if (cache.has_key(h)):
                 return cache[h]
-            else
+            else:
                 r = origf(*args, **kwargs)
                 cache[h] = r
                 return r
@@ -233,7 +233,8 @@ suffice, eg::
 
     env = {'CC': 'gcc',
            'CFLAGS': '-Wall -O2'
-           ...}
+           #...
+          }
     hello_o = obj("hello.o", "hello.c", env)
 
 This almost works, but has two problems. First off, there's no

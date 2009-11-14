@@ -96,8 +96,8 @@ this::
        elif n == 1:
            return 1
        else:
-       cache[n] = fib(n-1) + fib(n-2)
-       return cache[n]
+           cache[n] = fib(n-1) + fib(n-2)
+           return cache[n]
 
 We could abstract the caching so that it doesn't pollute our business
 logic and so that we can reuse it::
@@ -105,9 +105,9 @@ logic and so that we can reuse it::
    def memoize(f):
        cache = {}
        def wrapped_f(arg):
-         if arg in cache:
-          return cache
-      cache[arg] = f(arg)
+           if arg in cache:
+              return cache[arg]
+           cache[arg] = f(arg)
            return cache[arg]
        return wrapped_f
 
