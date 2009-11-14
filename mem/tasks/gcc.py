@@ -72,7 +72,7 @@ def t_c_obj(target, source_list, CFLAGS, CPPPATH):
     for source in source_list:
         inc_dirs.add("-I" + os.path.dirname(source))
         if not os.path.exists(str(source)):
-            mem.fail("%s does not exist" % source)
+            Mem.instance().fail("%s does not exist" % source)
 
         mem.add_dep(util.convert_to_file(source))
 
@@ -89,7 +89,7 @@ def t_c_obj(target, source_list, CFLAGS, CPPPATH):
     util.ensure_file_dir(target)
 
     if util.run("GCC", source_list, args) != 0:
-        mem.fail()
+        Mem.instance().fail()
 
     return nodes.File(target)
 
@@ -105,7 +105,7 @@ def t_cpp_obj(target, source_list, CXXFLAGS, CPPPATH):
     for source in source_list:
         inc_dirs.add("-I" + os.path.dirname(source))
         if not os.path.exists(str(source)):
-            mem.fail("%s does not exist" % source)
+            Mem.instance().fail("%s does not exist" % source)
 
             mem.add_dep(util.convert_to_file(source))
 
@@ -124,7 +124,7 @@ def t_cpp_obj(target, source_list, CXXFLAGS, CPPPATH):
     util.ensure_file_dir(target)
 
     if util.run("Compiling", source_list, args) != 0:
-        mem.fail()
+        Mem.instance().fail()
 
     return nodes.File(target)
 
@@ -142,7 +142,7 @@ def t_prog(target, objs, CFLAGS, LIBS, LIBPATH, LINKFLAGS):
     util.ensure_file_dir(target)
 
     if util.run("Linking", target, args) != 0:
-        mem.fail()
+        Mem.instance().fail()
 
     return nodes.File(target)
 
@@ -158,7 +158,7 @@ def build_obj(target, source, ext, env=None, **kwargs):
         t.start()
         return t
     else:
-        mem.fail("Don't know how to build %s" % source)
+        Mem.instance().fail("Don't know how to build %s" % source)
 
     return t
 
@@ -185,7 +185,7 @@ def obj(source_list, target=None, env=None, build_dir=None, **kwargs):
             if buildext == None:
                 buildext = ext
             elif buildext != ext:
-                mem.fail("Mixed extensions in a single build object")
+                Mem.instance().fail("Mixed extensions in a single build object")
             new_source_list.append(source)
 
         t = os.path.join(BuildDir, str(target))
