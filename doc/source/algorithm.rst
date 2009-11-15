@@ -176,9 +176,7 @@ Python makes both of these fairly trivial. For hashing we'll either
 call a hash() method on each object (if supported), or fall back on
 using Python's pickle.
 
-For durability we'll use Python's `shelve <http://docs.python.org/library/shelve.html>`_
-module (which
-basically backs a dict() with a file using `pickle <http://docs.python.org/library/pickle.html>`_.
+For durability we'll write a pickle into a file named with the hash.
 
 A File class
 ~~~~~~~~~~~~
