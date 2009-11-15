@@ -78,7 +78,7 @@ def memoize(taskf):
 
 
 def subdir(*args, **kwargs):
-    Mem.instance().subdir(*args, **kwargs)
+    return Mem.instance().subdir(*args, **kwargs)
 
 
 def _find_root():
