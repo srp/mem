@@ -25,6 +25,7 @@ import sys
 from threading import Thread
 
 import mem
+from mem._mem import Mem
 from mem import nodes
 from mem import util
 
