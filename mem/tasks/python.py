@@ -196,7 +196,8 @@ def _python_cython(source, env, build_dir, **kwargs):
     if not _has_cython:
         raise RuntimeError("Cython is not installed!")
 
-    base_target = os.path.join(build_dir, os.path.splitext(source)[0])
+    fname = os.path.basename(source)
+    base_target = os.path.join(build_dir, os.path.splitext(fname)[0])
 
     cfile = _run_cython(base_target + '.c', source,
         env.get("CYTHON_INCLUDE", [])
