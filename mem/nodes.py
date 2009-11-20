@@ -156,5 +156,10 @@ class File(str):
 
     def __setstate__(self, d):
         """return the part of the state to pickle when acting as a result"""
-        str.__init__(self, d["path"])
+        # Removed a call to str.__init__(d['path']) which 
+        # is not needed and is definitively wrong, since strings
+        # are immutable. Added an assert instead
         self._hash = d["hash"]
+        assert(self == d['path'])
+
+
