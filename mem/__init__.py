@@ -38,6 +38,8 @@ def add_deps(ds):
 def fail(*args, **kwargs):
     Mem.instance().fail(*args, **kwargs)
 
+def inst():
+    return Mem.instance()
 
 # TODO: this function uses private functions from mem, but
 # must be outside of mem to be used as a decorator even before
@@ -108,4 +110,3 @@ def main():
     root = _find_root()
     mfr_mod = import_memfile(root + os.path.sep + "MemfileRoot")
     do_build(root, mfr_mod.build)
-
