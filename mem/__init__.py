@@ -109,4 +109,15 @@ def main():
     sys.path.append("./")
     root = _find_root()
     mfr_mod = import_memfile(root + os.path.sep + "MemfileRoot")
+
+    # classes's __module__ will help tell us where we're installed
+    class WhereAreWe:
+        pass
+
+    mem_dir = os.path.dirname(sys.modules[WhereAreWe.__module__].__file__)
+    for f in os.listdir(os.path.join(mem_dir, "tasks")):
+        if not f.endswith(".py"):
+            continue
+        __import__("mem.tasks." + f[:-2])
+
     do_build(root, mfr_mod.build)
