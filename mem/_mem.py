@@ -81,13 +81,13 @@ class Singleton(object):
     @classmethod
     def destroy(cls):
         """
-        Delete this Singleton object, allowing a new Singleton to be created. 
+        Delete this Singleton object, allowing a new Singleton to be created.
         This is useful in testing
         """
         del cls.__it__
         cls.__it__ = None
 
-        # TODO: this shouldn't be done here; a redesign should 
+        # TODO: this shouldn't be done here; a redesign should
         # happen to replace Mem through a Build class or similar. This
         # build class would also hold File caches (via a reflector class
         # or similar). All those globals make me a bit sick.
@@ -198,7 +198,7 @@ class Mem(Singleton):
             if hasattr(objs, "get_hash"):
                 return objs.get_hash()
             elif isinstance(objs, types.ModuleType):
-                return self.nodes.File(objs.__file__).get_hash()
+                return nodes.File(objs.__file__).get_hash()
             elif hasattr(objs, "__iter__"):
                 if isinstance(objs, dict):
                     return "\1" + "\0".join([gh(k) + "\3" + gh(objs[k])
@@ -209,13 +209,13 @@ class Mem(Singleton):
                 return ("\4%s\0%s\0%s" %
                         (objs.__func__.__name__,
                          objs.__module__,
-                         self.nodes.File(
+                         nodes.File(
                             sys.modules[objs.__module__].__file__).get_hash()))
             elif isinstance(objs, (types.FunctionType, types.TypeType)):
                 return ("\4%s\0%s\0%s" %
                         (objs.__name__,
                          objs.__module__,
-                         self.nodes.File(
+                         nodes.File(
                             sys.modules[objs.__module__].__file__).get_hash()))
             elif isinstance(objs, util.AutoHashable):
                 return "\5" + "\0".join([gh(getattr(objs, a))
