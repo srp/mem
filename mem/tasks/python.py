@@ -12,10 +12,11 @@ from distutils.sysconfig import get_config_var
 
 try:
     import cython
-    import re
     _has_cython = True
 except ImportError:
     _has_cython = False
+
+import re
 
 from mem.tasks.gcc import *
 from mem._mem import Mem
