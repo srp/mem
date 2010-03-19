@@ -72,7 +72,7 @@ def obj(sources, env=None, build_dir=None, **kwargs):
     if not type(sources) == list:
         sources = [sources]
 
-    env = env.copy()
+    env = env.shallow_copy()
     env.update(kwargs)
 
     sources = mem.util.flatten(sources)

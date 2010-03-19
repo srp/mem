@@ -27,7 +27,7 @@ import subprocess
 import re
 
 from nodes import File
-from _mem import Mem 
+from _mem import Mem
 
 RED    = chr(27) + "[31m"
 GREEN  = chr(27) + "[32m"
@@ -357,7 +357,7 @@ class Env(dict):
     def __str__(self):
         return repr(self)
 
-    def copy(self):
+    def shallow_copy(self):
         return Env(dict.copy(self))
 
     def replace(self, **kwargs):
