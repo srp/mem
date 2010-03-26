@@ -196,7 +196,7 @@ def obj(source_list, target=None, env=None, build_dir=None, **kwargs):
 
     # No target specified.  Build each object individually
     for source in nslist:
-        (name, ext) = os.path.splitext(str(source))
+        (name, ext) = os.path.splitext(os.path.basename(str(source)))
         target = os.path.join(BuildDir,  name + ".o")
 
         source = os.path.join(os.getcwd(), str(source))
