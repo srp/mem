@@ -154,8 +154,8 @@ class Mem(Singleton):
                     return result
                 return f
 
-            def __hasattr__(self, memfunc):
-                return self.mf.__hasattr__(memfunc)
+            def __hasattr__(self, attr):
+                return attr in self.mf.__dict__
 
         return Subdir(self, *args, **kwargs)
 
