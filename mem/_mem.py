@@ -139,11 +139,10 @@ class Mem(Singleton):
             def __getattr__(self, memfunc):
                 def f(*args, **kwargs):
                     if memfunc not in self.mf.__dict__:
-                        self.mem.fail("requested method '%s()' doesn't exist "
-                                      "in %s" %
-                                      (memfunc,
-                                       os.path.join(self.orig_dir,
-                                                    self.memfile)))
+                        raise AttributeError(
+                            "requested method '%s()' doesn't exist in %s" %
+                            (memfunc,
+                             os.path.join(self.orig_dir, self.memfile)))
                     os.chdir(self.subdir)
                     self.mem.cwd = self.subdir
                     try:
@@ -153,9 +152,6 @@ class Mem(Singleton):
                         self.mem.cwd = self.orig_dir
                     return result
                 return f
-
-            def __hasattr__(self, attr):
-                return attr in self.mf.__dict__
 
         return Subdir(self, *args, **kwargs)
 
