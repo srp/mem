@@ -130,11 +130,13 @@ class Mem(Singleton):
             allows methods on it to be called.
             """
             def __init__(self, mem, subdir, memfile="Memfile"):
-                self.mem = mem
-                self.orig_dir = os.path.abspath(os.curdir)
-                self.subdir = os.path.join(self.orig_dir, subdir)
-                self.memfile = os.path.join(self.subdir, memfile)
-                self.mf = util.import_module(self.memfile, self.memfile)
+                def set_attr(attr, val):
+                    object.__setattr__(self, attr, val)
+                set_attr("mem", mem)
+                set_attr("orig_dir", os.path.abspath(os.curdir))
+                set_attr("subdir", os.path.join(self.orig_dir, subdir))
+                set_attr("memfile", os.path.join(self.subdir, memfile))
+                set_attr("mf", util.import_module(self.memfile, self.memfile))
 
             def __getattr__(self, memfunc):
                 if memfunc not in self.mf.__dict__:
@@ -151,6 +153,9 @@ class Mem(Singleton):
                         self.mem.cwd = self.orig_dir
                     return result
                 return f
+
+            def __setattr__(self, attr, val):
+                setattr(self.mf, attr, val)
 
         return Subdir(self, *args, **kwargs)
 
