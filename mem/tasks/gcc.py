@@ -49,8 +49,6 @@ def make_depends(target, source_list, CFLAGS, CPPPATH, inc_dirs):
                                     inc_dirs)
     return deps
 
-
-@mem.memoize
 def make_depends_single(target, source,
                         CFLAGS, includes, target_inc, inc_dirs):
     mem.add_dep(util.convert_to_file(source))
