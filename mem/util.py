@@ -271,7 +271,7 @@ def with_env(**kwargs):
             if fkwargs.has_key("env"):
                 fenv = fkwargs.pop("env")
                 for k in kwargs.keys():
-                    if not fkwargs.has_key(k) or not fkwargs[k]:
+                    if not fkwargs.has_key(k):
                         if fenv and fenv.has_key(k):
                             fkwargs[k] = fenv[k]
                         else:
