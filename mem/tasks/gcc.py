@@ -39,29 +39,29 @@ def target_inc_flag(target, source_list):
         return ["-I" + os.path.dirname(target)]
     return []
 
-def make_depends(target, source_list, CFLAGS, CPPPATH, inc_dirs):
+def make_depends(target, source_list, CC, CFLAGS, CPPPATH, inc_dirs):
     includes = ["-I" + path for path in CPPPATH]
     deps = []
     for s in source_list:
         deps += make_depends_single(target, s,
-                                    CFLAGS, includes,
+                                    CC, CFLAGS, includes,
                                     target_inc_flag(target, source_list),
                                     inc_dirs)
     return deps
 
 def make_depends_single(target, source,
-                        CFLAGS, includes, target_inc, inc_dirs):
+                        CC, CFLAGS, includes, target_inc, inc_dirs):
     mem.add_dep(util.convert_to_file(source))
-    args = util.convert_cmd(["gcc"] + CFLAGS +
+    args = util.convert_cmd([CC] + CFLAGS +
                                 includes +
                                 target_inc +
                                 inc_dirs +
                                 ["-M", "-o", "-", source])
     return util.make_depends("GCC depends", source, args)
 
-@util.with_env(CFLAGS=[], CPPPATH=[])
+@util.with_env(CC="gcc", CFLAGS=[], CPPPATH=[])
 @mem.memoize
-def t_c_obj(target, source_list, CFLAGS, CPPPATH):
+def t_c_obj(target, source_list, CC, CFLAGS, CPPPATH):
     inc_dirs = set()
     if len(source_list) > 1:
         combine_opt=['-combine']
@@ -77,10 +77,10 @@ def t_c_obj(target, source_list, CFLAGS, CPPPATH):
 
     mem.add_deps([nodes.File(f) for f in
                   make_depends(target, source_list,
-                               CFLAGS=CFLAGS, CPPPATH=CPPPATH,
+                               CC=CC, CFLAGS=CFLAGS, CPPPATH=CPPPATH,
                                inc_dirs=list(inc_dirs))])
     includes = ["-I" + path for path in CPPPATH]
-    args = util.convert_cmd(["gcc"] +  CFLAGS + includes +
+    args = util.convert_cmd([CC] +  CFLAGS + includes +
                                 target_inc_flag(target, source_list) +
                                 list(inc_dirs) +
                                 combine_opt +
@@ -127,15 +127,15 @@ def t_cpp_obj(target, source_list, CXXFLAGS, CPPPATH):
 
     return nodes.File(target)
 
-@util.with_env(CFLAGS=[], LIBS=[], LIBPATH=[], LINKFLAGS=[])
+@util.with_env(CC="gcc", CFLAGS=[], LIBS=[], LIBPATH=[], LINKFLAGS=[])
 @mem.memoize
-def t_prog(target, objs, CFLAGS, LIBS, LIBPATH, LINKFLAGS):
+def t_prog(target, objs, CC, CFLAGS, LIBS, LIBPATH, LINKFLAGS):
     mem.add_deps(objs)
 
     npaths = map(lambda a: "-L" + str(a), LIBPATH)
     nlibs = map(lambda a: "-l" + str(a), LIBS)
 
-    args = util.convert_cmd(["gcc", "-o", target] + CFLAGS + LINKFLAGS +
+    args = util.convert_cmd([CC, "-o", target] + CFLAGS + LINKFLAGS +
                                 npaths + objs + nlibs)
 
     util.ensure_file_dir(target)
