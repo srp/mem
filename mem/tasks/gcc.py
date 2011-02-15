@@ -133,7 +133,13 @@ def t_prog(target, objs, CC, CFLAGS, LIBS, LIBPATH, LINKFLAGS):
     mem.add_deps(objs)
 
     npaths = map(lambda a: "-L" + str(a), LIBPATH)
-    nlibs = map(lambda a: "-l" + str(a), LIBS)
+    nlibs = []
+    for l in LIBS:
+        if type(l) is tuple:
+            assert l[1] == 'static'
+            nlibs.extend(["-Wl,-Bstatic", "-l" + l[0], "-Wl,-Bdynamic"])
+        else:
+            nlibs.append("-l" + l)
 
     args = util.convert_cmd([CC, "-o", target] + CFLAGS + LINKFLAGS +
                                 npaths + objs + nlibs)
