@@ -86,7 +86,7 @@ def subdir(*args, **kwargs):
 def _find_root():
     d = os.path.abspath(os.curdir)
     while (not os.path.exists(os.path.join(d, "MemfileRoot"))):
-        if d == "/":
+        if d == os.path.dirname(d):
             sys.stderr.write("No 'MemfileRoot' found!\n")
             sys.exit(1)
         d = os.path.dirname(d)
