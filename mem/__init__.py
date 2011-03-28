@@ -109,7 +109,8 @@ def main():
     sys.path.append("./")
     root = _find_root()
     mfr_mod = import_memfile(root + os.path.sep + "MemfileRoot")
-
+    sys.modules["MemfileRoot"] = mfr_mod
+    
     # classes's __module__ will help tell us where we're installed
     class WhereAreWe:
         pass
