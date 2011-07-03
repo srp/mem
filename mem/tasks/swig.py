@@ -104,8 +104,9 @@ def obj(sources, env=None, build_dir=None, **kwargs):
     ctargets.extend(env.c.obj(ctargets, env=env,
                               CFLAGS=env.get("SWIG_CFLAGS", [])))
     if jtargets:
-        jtargets.extend(env.java(jtargets, env=env,
-                                 JAVA_FLAGS=env.get("SWIG_JAVA_FLAGS", [])))
+        jtargets.extend(
+            env.java.compile(jtargets, env=env,
+                             JAVA_FLAGS=env.get("SWIG_JAVA_FLAGS", [])))
 
     return mem.util.convert_to_files(ctargets + ntargets + jtargets)
 
