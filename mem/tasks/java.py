@@ -25,20 +25,25 @@ import mem
 
 File = mem.nodes.File
 
-@mem.util.with_env(JAVA_FLAGS=[])
+@mem.util.with_env(JAVA_PACKAGE=None, JAVA_BUILD_DIR=None, JAVA_FLAGS=[])
 @mem.memoize
-def _compile(sources, BuildDir, JAVA_FLAGS):
-    args = ["javac", "-d", BuildDir] + JAVA_FLAGS + sources
+def _compile(sources, JAVA_PACKAGE, JAVA_BUILD_DIR, JAVA_FLAGS):
+    args = (["javac", "-d", JAVA_BUILD_DIR, "-cp", JAVA_BUILD_DIR] +
+            JAVA_FLAGS + sources)
     print " ".join(args)
     if subprocess.call(args) != 0:
         mem.fail()
-    return [File(os.path.join(BuildDir, os.path.splitext(source)[0] + ".class"))
+
+    def src_path_to_dest_file(p):
+        return os.path.splitext(os.path.basename(p))[0] + ".class"
+
+    return [File(os.path.join(JAVA_BUILD_DIR,
+                              *(JAVA_PACKAGE.split(".") +
+                                [src_path_to_dest_file(source)])))
             for source in sources]
 
 
-def compile(sources, env=None, build_dir=None, **kwargs):
-    BuildDir = mem.util.get_build_dir(env, build_dir)
-
+def compile(sources, env=None, **kwargs):
     if not type(sources) == list:
         sources = [sources]
     else:
@@ -46,4 +51,4 @@ def compile(sources, env=None, build_dir=None, **kwargs):
                    for source in mem.util.flatten(sources)]
         sources.sort()
 
-    return _compile(sources, BuildDir, **kwargs)
+    return _compile(sources, env=env, **kwargs)
