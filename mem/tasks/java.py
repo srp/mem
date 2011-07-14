@@ -22,12 +22,14 @@ import os
 import subprocess
 
 import mem
+from mem import nodes
 
 File = mem.nodes.File
 
 @mem.util.with_env(JAVA_PACKAGE=None, JAVA_BUILD_DIR=None, JAVA_FLAGS=[])
 @mem.memoize
 def _compile(sources, JAVA_PACKAGE, JAVA_BUILD_DIR, JAVA_FLAGS):
+    mem.add_deps([nodes.File(f) for f in sources])
     args = (["javac", "-d", JAVA_BUILD_DIR, "-cp", JAVA_BUILD_DIR] +
             JAVA_FLAGS + sources)
     print " ".join(args)
