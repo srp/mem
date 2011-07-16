@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 
+import sys
+
 from distutils.core import setup
+
+if sys.platform == "win32":
+    scripts = ['script/mem.bat',
+               'script/runmem.py']
+else:
+    scripts = ['script/mem']
 
 setup(name='Mem',
       version='1.0',
@@ -10,5 +18,5 @@ setup(name='Mem',
       packages=['mem',
                 'mem.tasks',
                 'mem'],
-      scripts=['script/mem'],
+      scripts=scripts,
      )
