@@ -307,12 +307,12 @@ convenient for the user writing the script.
 Build functions and CWD
 ^^^^^^^^^^^^^^^^^^^^^^^
 Build functions generally print to the user any commands that are
-being run, so the user know where the build broke, or how its
+being run, so the user knows where the build broke, or how it's
 proceeding. As far as possible it's suggested that, build functions
 should strive to accept absolute or relative paths, but only run and
 print using absolute paths.
 
-The rational for doing so is that a user can then, from any directory,
+The rationale for doing so is that a user can then, from any directory,
 copy and paste an offending command without having to figure out what
 directory he has to be in to run it.
 
@@ -338,7 +338,7 @@ writing a new build function:
 
 * Returning all targets: just as important as scanning to get all
   included dependencies is returning all of the results of a build
-  function. Lets say your compiler produces two output files, but you
+  function. Let's say your compiler produces two output files, and you
   only return one of those from your build function, but use the
   second file later in your build; since mem wasn't notified that the
   second file was a result, it won't restore it, meaning that later on
@@ -355,14 +355,14 @@ writing a new build function:
   the simpler memoized 'obj()'.
 
 * Use common sense and good programming style. Mem leaves you with the
-  full programming language in-tact; there's no excuse for using bad
+  full programming language intact; there's no excuse for using bad
   practices you wouldn't do in your normal programming.
 
 
 Exceptions
 ~~~~~~~~~~
 
-When we said that "Mem leaves the full programming language in-tact",
+When we said that "Mem leaves the full programming language intact",
 there's no better way to illustrate this then exceptions. You can
 raise and catch exceptions just like you normally would in python. This
 can be very useful, for example, you might still want to run your

@@ -17,7 +17,7 @@ thought process of creating a build system out of the memoization of
 function calls. I believe this approach will best lead to an
 understanding of how 'mem' works, and how to use and extend
 it. Arguably this new approach to building results in more elegant,
-simpler, easier to use build systems then typically seen approaches
+simpler, easier to use build systems than typically seen approaches
 to build systems.
 
 Background on Memoization
@@ -45,13 +45,13 @@ Properties needed for build
 `SCons <http://www.scons.org>`_ and similar build systems have already
 demonstrated that builds could be composed using function or method
 evaluation. Obviously to use memoization, we'll have to find a way to
-make these pure, or effectively pure. When viewed from linguistically,
+make these pure, or effectively pure. When viewed linguistically,
 build steps are not pure as they involve mutations on the file
 system. However, if we define pure to include the file results of a
 build step, then we can consider it to be pure as long as we can
 include such in the memoization process.
 
-Additionally, we're memoizing across multiple process invocations,
+Additionally, since we're memoizing across multiple process invocations,
 we'll also have to find a way to consistently and durably hash and
 cache.
 
@@ -61,7 +61,7 @@ Memoization for a build system
 The syntax
 ~~~~~~~~~~
 
-We'd prefer automatic memoization. Rather then designing a new
+We'd prefer automatic memoization. Rather than designing a new
 language for builds, we'll take a similar approach to SCons or
 Waf, and use Python as a language for expressing the steps in
 builds. Python's decorators give a perfect mechanism to support
@@ -279,8 +279,8 @@ and external files, it could just as easily be extended to work
 against database entries or external systems such as REST services
 such as S3 or state machines. Layering functionally on top of this
 core allows for just as rich of build expressions, with the full power
-of the underlying programming language in-tact.
+of the underlying programming language intact.
 
 In real world use, it has been seen to function correctly, and be
-faster and easier to develop and maintain build tasks on then SCons;
-it also runs faster then such.
+faster and easier to develop and maintain build tasks on than SCons;
+it also runs faster than such.
